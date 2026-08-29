@@ -1,0 +1,3246 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Hệ thống điểm rèn luyện</title>
+  <style>
+    :root{
+      --blue:#2563eb; --blue2:#1d4ed8;
+      --gray:#6b7280; --gray2:#4b5563;
+      --red:#dc2626; --red2:#b91c1c;
+      --green:#16a34a; --green2:#15803d;
+      --bg:#f4f6f8; --card:#ffffff;
+      --bd:#e5e7eb; --text:#111827;
+    }
+
+    /* ✅ Times New Roman toàn hệ thống */
+    body, button, input, select, textarea, table, th, td {
+      font-family: "Times New Roman", Times, serif;
+    }
+
+    body{background:var(--bg);margin:0;}
+    .container{
+      max-width:1250px;margin:52px auto;background:var(--card);
+      padding:22px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.12);
+      text-align:center;
+    }
+    h1{color:#1e3a8a;margin:4px 0 6px;}
+    h2{color:#374151;margin:0 0 10px;font-weight:600;}
+    h3{margin:10px 0 6px;color:#111827;}
+    .page{display:none;}
+    .page.active{display:block;}
+    .menu,.actions{margin-top:18px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+    .btn{
+      border:0;cursor:pointer;padding:11px 14px;border-radius:9px;
+      font-weight:800;background:var(--blue);color:white;min-width:220px;
+    }
+    .btn:hover{background:var(--blue2);}
+    .secondary{background:var(--gray);min-width:160px;}
+    .secondary:hover{background:var(--gray2);}
+    .danger{background:var(--red);min-width:160px;}
+    .danger:hover{background:var(--red2);}
+    .success{background:var(--green);min-width:160px;}
+    .success:hover{background:var(--green2);}
+    .content{
+      margin-top:14px;background:#f9fafb;border:1px solid var(--bd);
+      padding:14px;border-radius:12px;text-align:left;color:var(--text);
+      line-height:1.55;
+    }
+    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0;}
+    input,select,textarea{
+      padding:10px;border-radius:8px;border:1px solid #d1d5db;font-size:15px;
+      min-width:240px;
+    }
+    textarea{min-width:340px;min-height:92px;resize:vertical;}
+    .error{color:var(--red);font-weight:800;margin-top:8px;}
+    .badge{
+      display:inline-block;padding:6px 10px;border-radius:999px;
+      background:#eff6ff;color:#1d4ed8;font-weight:800;font-size:13px;
+    }
+    table{width:100%;border-collapse:collapse;margin-top:10px;}
+    th,td{border:1px solid var(--bd);padding:10px;text-align:left;vertical-align:top;}
+    th{background:#f3f4f6;}
+    /* ✅ Căn giữa cột điểm / số buổi nghỉ học */
+    th.num, td.num{ text-align:center; }
+    .xbtn{
+      border:0;cursor:pointer;background:var(--red);color:white;font-weight:900;
+      width:34px;height:34px;border-radius:10px;
+    }
+    .xbtn:hover{background:var(--red2);}
+    .note{font-size:13px;color:#374151;margin-top:6px;white-space:pre-line;}
+    .split{display:flex;gap:14px;flex-wrap:wrap;}
+    .panel{flex:1;min-width:320px;}
+    .hr{height:1px;background:var(--bd);margin:12px 0;}
+    .mini{min-width:140px;}
+    .checkbox-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap:8px;
+      margin-top:10px;
+    }
+    .cb-item{
+      display:flex;gap:8px;align-items:flex-start;
+      padding:10px;border:1px solid var(--bd);border-radius:10px;background:#fff;
+    }
+    .cb-item input{min-width:auto;margin-top:2px;}
+    .frame{
+      background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px;
+    }
+    code{background:#eef2ff;padding:2px 6px;border-radius:6px;}
+    .listBox{
+      border:1px solid var(--bd);
+      background:#fff;
+      border-radius:12px;
+      padding:10px;
+      margin-top:10px;
+    }
+    .itemRow{
+      display:flex;gap:10px;align-items:flex-start;justify-content:space-between;
+      padding:8px;border-bottom:1px solid var(--bd);
+    }
+    .itemRow:last-child{border-bottom:none;}
+    .itemMain{flex:1;}
+    .muted{color:#6b7280;font-size:13px;}
+    .bigScore{
+      font-size:34px;font-weight:900;color:#0f172a;line-height:1;
+    }
+    .pill{
+      display:inline-block;padding:6px 10px;border-radius:999px;
+      border:1px solid var(--bd);background:#fff;font-weight:800;
+      margin-right:8px;margin-top:6px;
+    }
+
+    /* ===== Autocomplete (gợi ý khi gõ) ===== */
+    .ac { position: relative; display: inline-block; }
+    .ac input { min-width: 260px; }
+    .ac-list{
+      position:absolute; top:100%; left:0; right:0; z-index:999;
+      background:#fff; border:1px solid var(--bd); border-radius:10px;
+      margin-top:6px; max-height:240px; overflow:auto;
+      box-shadow:0 10px 22px rgba(0,0,0,.14);
+      display:none; text-align:left;
+    }
+    .ac-item{
+      padding:10px; cursor:pointer;
+      border-bottom:1px solid var(--bd);
+    }
+    .ac-item:last-child{ border-bottom:none; }
+    .ac-item:hover{ background:#f3f4f6; }
+    .ac-item small{ color:#6b7280; font-weight:700; }
+
+    /* ===== Nút lên/xuống đổi thứ tự ===== */
+    .iconBtn{
+      border:1px solid var(--bd);
+      background:#fff;
+      cursor:pointer;
+      font-weight:900;
+      border-radius:10px;
+      width:36px; height:36px;
+    }
+    .iconBtn:hover{ background:#f3f4f6; }
+    .iconBtn:disabled{ opacity:.45; cursor:not-allowed; }
+    .absence-table-wrap{overflow-x:auto;width:100%;}
+    #absenceTable{table-layout:fixed;min-width:980px;}
+    #absenceTable th,#absenceTable td{padding:5px 3px;font-size:12px;text-align:center;vertical-align:middle;}
+    #absenceTable th:first-child,#absenceTable td:first-child{width:155px;text-align:left;position:sticky;left:0;background:#fff;z-index:2;}
+    #absenceTable th.session-head{width:66px;white-space:normal;line-height:1.15;}
+    .absence-choice{display:flex;flex-direction:column;align-items:flex-start;gap:2px;line-height:1.05;}
+    .absence-choice label{display:flex;align-items:center;gap:2px;white-space:nowrap;cursor:pointer;}
+    .absence-choice input{min-width:auto;width:13px;height:13px;margin:0;}
+    .absence-clear{border:0;background:transparent;color:var(--red);cursor:pointer;font-weight:800;font-size:11px;padding:1px 2px;}
+    .absence-clear:hover{text-decoration:underline;}
+  </style>
+</head>
+
+<body>
+<div class="container">
+
+  <!-- HOME -->
+  <section id="home" class="page active">
+    <h1>HỆ THỐNG ĐIỂM RÈN LUYỆN</h1>
+    <h2>Giáo viên: Nguyễn Ngọc Thịnh</h2>
+    <div class="badge">SPA 1 file • Lưu LocalStorage</div>
+
+    <div class="menu">
+      <button class="btn" onclick="goToAdmin('adminDashboard')">Quản lí Website</button>
+      <button class="btn" onclick="openClassTrackingGate()">Theo dõi điểm rèn luyện theo Lớp học</button>
+      <button class="btn" onclick="openStudentTrackingGate()">Theo dõi điểm rèn luyện của từng học sinh</button>
+    </div>
+  </section>
+  <!-- ADMIN DASHBOARD -->
+  <section id="adminDashboard" class="page">
+    <h1>Quản lí Website</h1>
+    <div class="content">
+      <div class="frame">
+        <h3>Tải kết quả rèn luyện ra Excel</h3>
+        <button class="btn" onclick="openExcelExport()">Tải Excel</button>
+        <div id="excelExportBox" style="display:none;margin-top:12px;"></div>
+      </div>
+    </div>
+
+
+    <div class="menu">
+      <button class="btn" onclick="goToAdmin('manageClass')">Quản lí Lớp học</button>
+      <button class="btn" onclick="goToAdmin('managePoints')">Quản lí điểm rèn luyện</button>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="goHome()">Về trang chủ</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+      <button class="btn danger" onclick="logoutAdmin()">Đăng xuất</button>
+    </div>
+  </section>
+
+  <!-- MANAGE PASSWORD -->
+  <section id="managePassword" class="page">
+    <h1>Quản lí mật khẩu</h1>
+
+    <div class="content">
+      <div class="split">
+        <div class="panel">
+          <b>Đổi mật khẩu Quản lí Website (Admin)</b>
+          <div class="row">
+            <input id="adminNewPass" placeholder="Mật khẩu admin mới" />
+            <button class="btn" onclick="changePassword('admin','adminNewPass')">Cập nhật</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <b>Đổi mật khẩu Theo dõi theo Lớp học</b>
+          <div class="row">
+            <input id="classNewPass" placeholder="Mật khẩu mới" />
+            <button class="btn" onclick="changePassword('class','classNewPass')">Cập nhật</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <b>Đổi mật khẩu Theo dõi từng học sinh</b>
+          <div class="row">
+            <input id="studentNewPass" placeholder="Mật khẩu mới" />
+            <button class="btn" onclick="changePassword('student','studentNewPass')">Cập nhật</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+      <div class="note">⚠️ Demo (LocalStorage). Muốn bảo mật thật: cần backend (NextJS API + DB).</div>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="goToAdmin('adminDashboard')">Về Quản lí</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+    </div>
+  </section>
+
+  <!-- MANAGE CLASS (menu) -->
+  <section id="manageClass" class="page">
+    <h1>Quản lí Lớp học</h1>
+
+    <div class="menu">
+      <button class="btn" onclick="goToAdmin('initBehaviorTypes')">Khởi tạo vi phạm và tích cực</button>
+      <button class="btn" onclick="goToAdmin('initClasses')">Khởi tạo Lớp học</button>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="goToAdmin('adminDashboard')">Về Quản lí</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+    </div>
+  </section>
+
+  <!-- INIT BEHAVIOR TYPES -->
+  <section id="initBehaviorTypes" class="page">
+    <h1>Khởi tạo vi phạm và tích cực</h1>
+
+    <div class="content">
+      <div class="row">
+        <select id="btType">
+          <option value="vi_pham">Vi phạm (điểm trừ)</option>
+          <option value="tich_cuc">Tích cực (điểm cộng)</option>
+        </select>
+        <input id="btName" placeholder="Tên loại (VD: Đi trễ)" />
+        <input id="btPoints" type="number" placeholder="Điểm (VD: 2)" class="mini"/>
+        <button class="btn" onclick="addBehaviorType()">Thêm</button>
+      </div>
+
+      <div class="note">
+        Có thể <b>sửa trực tiếp nội dung, loại và điểm</b> trong bảng.
+        Sau khi sửa, bấm <b>Lưu</b> ở từng dòng hoặc <b>Lưu tất cả</b>.
+        Vi phạm luôn là điểm âm; tích cực luôn là điểm dương.
+      </div>
+
+      <div class="actions" style="margin:10px 0;">
+        <button class="btn" onclick="saveAllBehaviorTypes()">💾 Lưu tất cả</button>
+        <button class="btn secondary" onclick="restoreDefaultBehaviorTypes()">↺ Khôi phục mặc định</button>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Loại</th>
+              <th>Tên nội dung</th>
+              <th class="num">Điểm</th>
+              <th class="num">Thứ tự</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="btTable"></tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        ↑ ↓ dùng để đổi thứ tự các loại. Thay đổi được lưu vào trình duyệt bằng localStorage.
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="goToAdmin('manageClass')">Về Quản lí Lớp học</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+    </div>
+  </section>
+
+  <!-- INIT CLASSES -->
+  <section id="initClasses" class="page">
+    <h1>Khởi tạo Lớp học</h1>
+
+    <div class="content">
+      <div class="row">
+        <input id="className" placeholder="Tên lớp (VD: 10A1)" />
+        <select id="semester">
+          <option value="HKI">Học kì I (Tuần 1 → 18)</option>
+          <option value="HKII">Học kì II (Tuần 19 → 36)</option>
+        </select>
+        <button class="btn" onclick="addClass()">Tạo lớp</button>
+      </div>
+      <div class="note">Cấu trúc: <b>TênLớp_HọcKì</b> (VD: <b>10A1_HKI</b>)</div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Lớp học</th>
+            <th class="num">Học kì</th>
+            <th>Tuần</th>
+            <th>Xóa lớp</th>
+          </tr>
+        </thead>
+        <tbody id="classTable"></tbody>
+      </table>
+
+      <div class="hr"></div>
+
+      <b>Danh sách học sinh theo lớp</b>
+      <div class="row">
+        <select id="classSelect" onchange="renderStudents()"></select>
+        <input id="studentName" placeholder="Họ và tên học sinh (VD: Nguyễn Văn A)" />
+        <button class="btn" onclick="addStudent()">Thêm học sinh</button>
+      </div>
+      <div id="studentHint" class="note"></div>
+
+      <div class="hr"></div>
+      <b>Thêm nhanh nhiều học sinh (Copy/Paste)</b>
+      <div class="row">
+        <textarea id="bulkStudents" placeholder="Mỗi dòng 1 học sinh. VD:
+Nguyễn Văn A
+Trần Thị B
+Lê Văn C"></textarea>
+      </div>
+      <div class="row">
+        <button class="btn success" onclick="addStudentsBulk()">Thêm hàng loạt</button>
+        <button class="btn secondary" onclick="clearBulkBox()">Xóa ô</button>
+      </div>
+      <div id="bulkHint" class="note"></div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Họ và tên</th>
+            <th>Xóa</th>
+          </tr>
+        </thead>
+        <tbody id="studentTable"></tbody>
+      </table>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="goToAdmin('manageClass')">Về Quản lí Lớp học</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+    </div>
+  </section>
+
+  <!-- MANAGE POINTS -->
+  <section id="managePoints" class="page">
+    <h1>Quản lí điểm rèn luyện</h1>
+
+    <div class="content">
+      <b>Bước 1:</b> Chọn lớp học để quản lí điểm
+      <div class="row">
+        <select id="pointsClassSelect"></select>
+        <button class="btn success" onclick="setPointsClass()">Chọn lớp</button>
+      </div>
+      <div id="pointsClassInfo" class="note"></div>
+
+      <div class="hr"></div>
+
+      <b>Bước 2:</b> Chọn chức năng
+      <div class="menu">
+        <button class="btn" onclick="goPointsPage('weeklyUpdate')">Cập nhật rèn luyện theo Tuần</button>
+        <button class="btn" onclick="goPointsPage('semesterSummary')">Tổng kết rèn luyện theo Học kì</button>
+        <button class="btn" onclick="goPointsPage('semesterViolations')">Tổng kết vi phạm và tích cực theo Học kì</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="goToAdmin('adminDashboard')">Về Quản lí</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+    </div>
+  </section>
+
+  <!-- WEEKLY UPDATE MENU -->
+  <section id="weeklyUpdate" class="page">
+    <h1>Cập nhật rèn luyện theo Tuần</h1>
+    <div class="content">
+      <div class="frame">
+        <b>Lớp đang chọn:</b> <span id="wkClassLabel">---</span><br/>
+        <b>Học kì:</b> <span id="wkSemLabel">---</span> • <b>Tuần:</b> <span id="wkRangeLabel">---</span>
+      </div>
+      <div class="menu">
+        <button class="btn" onclick="goWeeklySubPage('weeklyAbsence')">Nhập buổi nghỉ theo tuần</button>
+        <button class="btn" onclick="goWeeklySubPage('weeklyPractice')">Nhập rèn luyện theo Tuần</button>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" onclick="goToAdmin('managePoints')">Về Quản lí điểm</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+    </div>
+  </section>
+
+  <section id="weeklyAbsence" class="page">
+    <h1>Nhập buổi nghỉ theo tuần</h1>
+    <div class="content">
+      <div class="frame">
+        <b>Lớp đang chọn:</b> <span id="waClassLabel">---</span><br/>
+        <b>Học kì:</b> <span id="waSemLabel">---</span> • <b>Tuần:</b> <span id="waRangeLabel">---</span>
+      </div>
+      <div class="row">
+        <b>Chọn tuần:</b>
+        <select id="absenceWeekSelect" onchange="renderAbsenceTable()"></select>
+      </div>
+      <div class="note">
+        Với mỗi buổi, tick <b>Nghỉ học có phép</b> hoặc <b>Nghỉ học không phép</b>.
+        Có thể bỏ chọn nếu học sinh không nghỉ.
+      </div>
+      <div class="row">
+        <button class="btn success" onclick="saveAbsenceWeek()">Lưu cập nhật</button>
+        <button class="btn secondary" onclick="clearAbsenceWeek()">Bỏ chọn tất cả</button>
+      </div>
+      <div class="absence-table-wrap">
+      <table id="absenceTable">
+        <thead>
+          <tr>
+            <th>Họ và tên học sinh</th>
+            <th class="session-head">Sáng thứ hai</th><th class="session-head">Chiều thứ hai</th>
+            <th class="session-head">Sáng thứ ba</th><th class="session-head">Chiều thứ ba</th>
+            <th class="session-head">Sáng thứ tư</th><th class="session-head">Chiều thứ tư</th>
+            <th class="session-head">Sáng thứ năm</th><th class="session-head">Chiều thứ năm</th>
+            <th class="session-head">Sáng thứ sáu</th><th class="session-head">Chiều thứ sáu</th>
+            <th class="session-head">Sáng thứ bảy</th><th class="session-head">Chiều thứ bảy</th>
+          </tr>
+        </thead>
+        <tbody id="absenceTableBody"></tbody>
+      </table>
+      </div>
+      <div class="note" id="absenceHint"></div>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" onclick="goToWeeklyMenu()">Về Cập nhật rèn luyện theo Tuần</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+    </div>
+  </section>
+
+  <section id="weeklyPractice" class="page">
+    <h1>Nhập rèn luyện theo Tuần</h1>
+    <div class="content">
+      <div class="frame">
+        <b>Lớp đang chọn:</b> <span id="wpClassLabel">---</span><br/>
+        <b>Học kì:</b> <span id="wpSemLabel">---</span> • <b>Tuần:</b> <span id="wpRangeLabel">---</span>
+      </div>
+      <div class="hr"></div>
+      <div class="row">
+        <b>Chọn tuần:</b>
+        <select id="weekSelect" onchange="onWeeklySelectionChange()"></select>
+        <b>Họ và tên học sinh:</b>
+        <div class="ac">
+          <input id="weekStudentSearch" placeholder="Gõ để tìm học sinh..." autocomplete="off">
+          <div id="weekStudentSuggest" class="ac-list"></div>
+        </div>
+        <select id="weekStudentSelect" style="display:none;"></select>
+      </div>
+      <div class="hr"></div>
+      <div class="frame">
+        <b>Dữ liệu đã lưu (Tuần <span id="savedWeekLabel">-</span> • <span id="savedStudentLabel">-</span>)</b>
+        <div class="row">
+          <button class="btn danger mini" onclick="deleteSavedWeekly('all')">Xóa toàn bộ đã lưu</button>
+          <button class="btn danger mini" onclick="deleteSavedWeekly('violations')">Xóa Vi phạm</button>
+          <button class="btn danger mini" onclick="deleteSavedWeekly('positives')">Xóa Tích cực</button>
+          <button class="btn danger mini" onclick="deleteSavedWeekly('absences')">Xóa Buổi nghỉ</button>
+          <button class="btn danger mini" onclick="deleteSavedWeekly('notes')">Xóa Ghi chú</button>
+        </div>
+        <div id="savedDataBox" class="note">Chưa có dữ liệu đã lưu.</div>
+      </div>
+      <div class="hr"></div>
+      <div class="split">
+        <div class="panel">
+          <h3>Vi phạm (chọn nhiều)</h3>
+          <div class="row">
+            <div class="ac">
+              <input id="violationTypeSearch" placeholder="Gõ để tìm loại vi phạm..." autocomplete="off">
+              <div id="violationSuggest" class="ac-list"></div>
+            </div>
+            <select id="violationTypeSelect" style="display:none;"></select>
+            <select id="violationCount" class="mini"></select>
+            <button class="btn success mini" onclick="addTempViolation()">+ Thêm</button>
+          </div>
+          <textarea id="violationDetail" placeholder="Nội dung cụ thể cho loại vi phạm đang chọn (có thể bỏ trống)"></textarea>
+          <div class="listBox"><b>Danh sách vi phạm đã chọn</b><div id="vioList" class="muted">Chưa có vi phạm.</div></div>
+        </div>
+        <div class="panel">
+          <h3>Tích cực (chọn nhiều)</h3>
+          <div class="row">
+            <div class="ac">
+              <input id="positiveTypeSearch" placeholder="Gõ để tìm loại tích cực..." autocomplete="off">
+              <div id="positiveSuggest" class="ac-list"></div>
+            </div>
+            <select id="positiveTypeSelect" style="display:none;"></select>
+            <select id="positiveCount" class="mini"></select>
+            <button class="btn success mini" onclick="addTempPositive()">+ Thêm</button>
+          </div>
+          <textarea id="positiveDetail" placeholder="Nội dung cụ thể cho loại tích cực đang chọn (có thể bỏ trống)"></textarea>
+          <div class="listBox"><b>Danh sách tích cực đã chọn</b><div id="posList" class="muted">Chưa có tích cực.</div></div>
+        </div>
+      </div>
+      <div class="hr"></div>
+      <h3>Ghi chú (nếu có)</h3>
+      <textarea id="weekNote" placeholder="Nhập nội dung ghi chú..."></textarea>
+      <div class="row">
+        <button class="btn success" onclick="saveWeeklyEntry()">Lưu cập nhật</button>
+        <button class="btn secondary" onclick="resetWeeklyForm()">Xóa form</button>
+      </div>
+      <div class="note" id="wkHint"></div>
+    </div>
+    <div class="content">
+      <h3 id="weeklySummaryTitle">Bảng Tổng Kết Rèn Luyện</h3>
+      <table>
+        <thead><tr>
+          <th>Họ và tên</th><th>Vi phạm</th><th>Tích cực</th>
+          <th class="num">Tổng điểm</th><th class="num">Số buổi nghỉ học</th><th>Ghi chú</th>
+        </tr></thead>
+        <tbody id="weeklySummaryTable"></tbody>
+      </table>
+      <div class="hr"></div>
+      <div class="frame">
+        <b>Tổng kết Học Sinh Tiêu Biểu của Tuần:</b>
+        <div id="featuredStudentBox" style="margin-top:8px;font-size:16px;font-weight:900">---</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" onclick="goToWeeklyMenu()">Về Cập nhật rèn luyện theo Tuần</button>
+      <button class="btn secondary" onclick="goToAdmin('managePoints')">Về Quản lí điểm</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+    </div>
+  </section>
+
+  <!-- SEMESTER SUMMARY (ADMIN) -->
+  <section id="semesterSummary" class="page">
+    <h1>Tổng kết rèn luyện theo Học kì</h1>
+
+    <div class="content">
+      <div class="frame">
+        <b>Lớp đang chọn:</b> <span id="semClassLabel">---</span><br/>
+        <b>Học kì:</b> <span id="semSemLabel">---</span> • <b>Tuần:</b> <span id="semRangeLabel">---</span>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="frame">
+        <b>Vinh danh học sinh tiêu biểu của Lớp học:</b>
+        <div style="margin-top:8px;font-size:16px;font-weight:900" id="semesterFeaturedBox">---</div>
+        <div class="note">
+          Tiêu chí: Tổng điểm (cộng dồn các tuần) chỉ tính ở các tuần mà học sinh <b>không vi phạm</b> và <b>không nghỉ</b>.  
+          Nếu bằng nhau: ngăn cách bằng <b>&</b>.
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <h3>Bảng Tổng kết xếp loại rèn luyện chung của Lớp học</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Xếp loại rèn luyện</th>
+            <th class="num">Số lượng</th>
+            <th>Họ và tên (không liệt kê loại Tốt)</th>
+          </tr>
+        </thead>
+        <tbody id="semesterClassLevelTable"></tbody>
+      </table>
+
+      <div class="hr"></div>
+
+      <h3>Bảng Tổng kết xếp loại rèn luyện của học sinh Lớp học</h3>
+      <div class="row">
+        <button class="btn success" onclick="renderSemesterSummaryAdmin()">Tải / Làm mới tổng kết</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Họ và tên</th>
+            <th class="num">Điểm rèn luyện</th>
+            <th>Số bậc rèn luyện bị hạ</th>
+            <th class="num">Số buổi nghỉ học</th>
+            <th>Xếp loại rèn luyện</th>
+            <th>Ghi chú</th>
+          </tr>
+        </thead>
+        <tbody id="semesterStudentLevelTable"></tbody>
+      </table>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="goToAdmin('managePoints')">Về Quản lí điểm</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+    </div>
+  </section>
+
+  <!-- SEMESTER VIOLATIONS (ADMIN) -->
+  <section id="semesterViolations" class="page">
+    <h1>Tổng kết vi phạm và tích cực theo Học kì</h1>
+
+    <div class="content">
+      <div class="frame">
+        <b>Lớp đang chọn:</b> <span id="vioClassLabel">---</span><br/>
+        <b>Học kì:</b> <span id="vioSemLabel">---</span> • <b>Tuần:</b> <span id="vioRangeLabel">---</span>
+      </div>
+
+      <div class="row">
+        <button class="btn success" onclick="renderSemesterViolationsTable(pointsCtx.classId,'semesterViolationsStudentTable')">Tải / Làm mới tổng kết</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Họ và tên</th>
+            <th>Vi phạm</th>
+            <th>Tích cực</th>
+            <th class="num">Số buổi nghỉ học</th>
+            <th>Ghi chú</th>
+          </tr>
+        </thead>
+        <tbody id="semesterViolationsStudentTable"></tbody>
+      </table>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="goToAdmin('managePoints')">Về Quản lí điểm</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+    </div>
+  </section>
+
+  <!-- ========================= -->
+  <!-- CLASS TRACKING (GATE) -->
+  <!-- ========================= -->
+  <section id="classTrackingGate" class="page">
+    <h1>Theo dõi điểm rèn luyện theo Lớp học</h1>
+
+    <div class="content">
+      <div class="row">
+        <b>Chọn Lớp học:</b>
+        <select id="ctGateClassSelect" onchange="ctGateUpdateInfo()"></select>
+      </div>
+
+      <div class="row">
+        <button class="btn" onclick="submitClassTrackingGate()">Vào trang theo dõi</button>
+      </div>
+
+      <div id="ctGateInfo" class="note"></div>
+      <div id="ctGateError" class="error"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="goHome()">Về trang chủ</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+    </div>
+  </section>
+
+  <!-- CLASS TRACKING DASHBOARD -->
+  <section id="classTracking" class="page">
+    <h1>Theo dõi Lớp học</h1>
+
+    <div class="content">
+      <div class="frame">
+        <b>Lớp đang theo dõi:</b> <span id="ctClassLabel">---</span><br/>
+        <b>Học kì:</b> <span id="ctSemLabel">---</span> • <b>Tuần:</b> <span id="ctRangeLabel">---</span>
+      </div>
+
+      <div class="menu">
+        <button class="btn" onclick="goToClassTrack('classWeeklyView')">Kết quả rèn luyện của cả lớp theo Tuần</button>
+        <button class="btn" onclick="goToClassTrack('classSemesterView')">Kết quả rèn luyện của cả lớp theo Học kì</button>
+        <button class="btn" onclick="goToClassTrack('classSemesterViolationsView')">Kết quả vi phạm của cả lớp theo Học kì</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="goHome()">Về trang chủ</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+      <button class="btn secondary" onclick="openClassTrackingGate()">Chọn lớp khác</button>
+    </div>
+  </section>
+
+  <!-- CLASS WEEKLY VIEW -->
+  <section id="classWeeklyView" class="page">
+    <h1>Kết quả rèn luyện của cả lớp theo Tuần</h1>
+
+    <div class="content">
+      <div class="frame">
+        <b>Lớp:</b> <span id="ctWClassLabel">---</span> •
+        <b>Học kì:</b> <span id="ctWSemLabel">---</span> •
+        <b>Tuần:</b> <span id="ctWRangeLabel">---</span>
+      </div>
+
+      <div class="row">
+        <b>Chọn Tuần:</b>
+        <select id="ctWeekSelect" onchange="renderClassWeeklyView()"></select>
+      </div>
+
+      <div class="frame">
+        <b>Tổng kết Học Sinh Tiêu Biểu của Tuần:</b>
+        <div style="margin-top:8px;font-size:16px;font-weight:900" id="ctWeeklyFeaturedBox">---</div>
+      </div>
+
+      <div class="hr"></div>
+
+      <h3 id="ctWeeklyTitle">Bảng Tổng Kết Rèn Luyện của Tuần</h3>
+      <table id="ctWeeklyTable">
+        <thead>
+          <tr>
+            <th>Họ và tên</th>
+            <th>Vi phạm</th>
+            <th>Tích cực</th>
+            <th class="num">Tổng điểm</th>
+            <th class="num">Số buổi nghỉ học</th>
+            <th>Ghi chú</th>
+          </tr>
+        </thead>
+        <tbody id="ctWeeklyTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="goToClassTrack('classTracking')">Về trang Theo dõi lớp</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+    </div>
+  </section>
+
+  <!-- CLASS SEMESTER VIEW (READ-ONLY) -->
+  <section id="classSemesterView" class="page">
+    <h1>Kết quả rèn luyện của cả lớp theo Học kì</h1>
+
+    <div class="content">
+      <div class="frame">
+        <b>Lớp:</b> <span id="ctSClassLabel">---</span><br/>
+        <b>Học kì:</b> <span id="ctSSemLabel">---</span> • <b>Tuần:</b> <span id="ctSRangeLabel">---</span>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="frame">
+        <b>Vinh danh học sinh tiêu biểu của Lớp học:</b>
+        <div style="margin-top:8px;font-size:16px;font-weight:900" id="ctSemesterFeaturedBox">---</div>
+      </div>
+
+      <div class="hr"></div>
+
+      <h3>Bảng Tổng kết xếp loại rèn luyện chung của Lớp học</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Xếp loại rèn luyện</th>
+            <th class="num">Số lượng</th>
+            <th>Họ và tên (không liệt kê loại Tốt)</th>
+          </tr>
+        </thead>
+        <tbody id="ctSemesterClassLevelTable"></tbody>
+      </table>
+
+      <div class="hr"></div>
+
+      <h3>Bảng Tổng kết xếp loại rèn luyện của học sinh Lớp học</h3>
+      <div class="row">
+        <button class="btn success" onclick="renderSemesterSummaryInto(classTrackCtx.classId,'ctSemesterFeaturedBox','ctSemesterClassLevelTable','ctSemesterStudentLevelTable',true)">Tải / Làm mới</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Họ và tên</th>
+            <th class="num">Điểm rèn luyện</th>
+            <th>Số bậc rèn luyện bị hạ</th>
+            <th class="num">Số buổi nghỉ học</th>
+            <th>Xếp loại rèn luyện</th>
+            <th>Ghi chú</th>
+          </tr>
+        </thead>
+        <tbody id="ctSemesterStudentLevelTable"></tbody>
+      </table>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="goToClassTrack('classTracking')">Về trang Theo dõi lớp</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+    </div>
+  </section>
+
+  <!-- CLASS SEMESTER VIOLATIONS VIEW (READ-ONLY) -->
+  <section id="classSemesterViolationsView" class="page">
+    <h1>Kết quả vi phạm của cả lớp theo Học kì</h1>
+
+    <div class="content">
+      <div class="frame">
+        <b>Lớp:</b> <span id="ctVClassLabel">---</span><br/>
+        <b>Học kì:</b> <span id="ctVSemLabel">---</span> • <b>Tuần:</b> <span id="ctVRangeLabel">---</span>
+      </div>
+
+      <div class="row">
+        <button class="btn success" onclick="renderSemesterViolationsTable(classTrackCtx.classId,'ctSemesterViolationsTable')">Tải / Làm mới</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Họ và tên</th>
+            <th>Vi phạm</th>
+            <th>Tích cực</th>
+            <th class="num">Số buổi nghỉ học</th>
+            <th>Ghi chú</th>
+          </tr>
+        </thead>
+        <tbody id="ctSemesterViolationsTable"></tbody>
+      </table>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="goToClassTrack('classTracking')">Về trang Theo dõi lớp</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+    </div>
+  </section>
+
+  <!-- ========================= -->
+  <!-- STUDENT TRACKING (GATE) -->
+  <!-- ========================= -->
+  <section id="studentTrackingGate" class="page">
+    <h1>Theo dõi điểm rèn luyện của từng học sinh</h1>
+
+    <div class="content">
+      <div class="row">
+        <b>Chọn Lớp học:</b>
+        <select id="stGateClassSelect" onchange="stGateOnClassChange()"></select>
+      </div>
+
+      <div class="row">
+        <b>Chọn Họ và tên học sinh:</b>
+        <select id="stGateStudentSelect"></select>
+      </div>
+
+      <div class="row">
+        <button class="btn" onclick="submitStudentTrackingGate()">Vào trang theo dõi</button>
+      </div>
+
+      <div id="stGateInfo" class="note"></div>
+      <div id="stGateError" class="error"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="goHome()">Về trang chủ</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+    </div>
+  </section>
+
+  <!-- STUDENT TRACKING VIEW -->
+  <section id="studentTracking" class="page">
+    <h1>Theo dõi từng học sinh</h1>
+
+    <div class="content">
+      <div class="frame">
+        <b>Lớp:</b> <span id="stClassLabel">---</span><br/>
+        <b>Học sinh:</b> <span id="stStudentLabel">---</span>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="frame">
+        <div class="row" style="justify-content:space-between;">
+          <div>
+            <div class="muted">Điểm rèn luyện</div>
+            <div class="bigScore" id="stScoreBig">--</div>
+          </div>
+          <div style="text-align:left;">
+            <div class="pill">Bị hạ: <b id="stDowngrade">-</b> bậc</div>
+            <div class="pill">Xếp loại: <b id="stLevel">-</b></div>
+            <div class="pill">Số buổi nghỉ: <b id="stAbsTotal">-</b></div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div>
+          <b>Tuần đạt học sinh tiêu biểu:</b>
+          <div id="stFeaturedWeeks" style="margin-top:6px;">---</div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <b>Vinh danh học sinh tiêu biểu của Lớp học:</b>
+          <div id="stSemesterFeatured" style="margin-top:6px;">---</div>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <h3>Bảng tổng kết theo Tuần của học sinh</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Tuần</th>
+            <th>Vi phạm</th>
+            <th>Tích cực</th>
+            <th class="num">Tổng điểm</th>
+            <th class="num">Số buổi nghỉ học</th>
+            <th>Ghi chú</th>
+          </tr>
+        </thead>
+        <tbody id="stWeeklyTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" onclick="goHome()">Về trang chủ</button>
+      <button class="btn secondary" onclick="goBack()">Quay về trang trước</button>
+      <button class="btn secondary" onclick="openStudentTrackingGate()">Chọn học sinh khác</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // Đã bỏ toàn bộ màn hình nhập mật khẩu và kiểm tra mật khẩu.
+  const LS = {
+    behaviorTypes: "dr_behavior_types",
+    classes: "dr_classes",
+    points: "dr_points_data",
+    pointsSelectedClass: "dr_points_selected_class",
+    downgrades: "dr_semester_downgrades"
+  };
+  const DEFAULT_BEHAVIOR_TYPES = [
+    { id: "default-vio-1", type: "vi_pham", name: "Đi học trễ", points: -5 },
+    { id: "default-vio-2", type: "vi_pham", name: "Không làm bài tập", points: -5 },
+    { id: "default-vio-3", type: "vi_pham", name: "Nói chuyện trong giờ", points: -3 },
+    { id: "default-vio-4", type: "vi_pham", name: "Vắng không phép", points: -10 },
+    { id: "default-vio-5", type: "vi_pham", name: "Không đúng đồng phục", points: -3 },
+    { id: "default-vio-6", type: "vi_pham", name: "Vi phạm nội quy lớp/trường", points: -5 },
+    { id: "default-pos-1", type: "tich_cuc", name: "Phát biểu xây dựng bài", points: 3 },
+    { id: "default-pos-2", type: "tich_cuc", name: "Giúp đỡ bạn học", points: 3 },
+    { id: "default-pos-3", type: "tich_cuc", name: "Tham gia hoạt động trường/lớp", points: 5 },
+    { id: "default-pos-4", type: "tich_cuc", name: "Đạt thành tích trong học tập", points: 5 },
+    { id: "default-pos-5", type: "tich_cuc", name: "Thực hiện tốt trực nhật", points: 2 },
+    { id: "default-pos-6", type: "tich_cuc", name: "Có hành động tích cực, hỗ trợ tập thể", points: 3 }
+  ];
+
+  if (!localStorage.getItem(LS.behaviorTypes)) {
+    localStorage.setItem(LS.behaviorTypes, JSON.stringify(DEFAULT_BEHAVIOR_TYPES));
+  }
+  if (!localStorage.getItem(LS.classes)) localStorage.setItem(LS.classes, JSON.stringify([]));
+  if (!localStorage.getItem(LS.points)) localStorage.setItem(LS.points, JSON.stringify({}));
+  if (!localStorage.getItem(LS.downgrades)) localStorage.setItem(LS.downgrades, JSON.stringify({}));
+
+  function getBehaviorTypes(){ return JSON.parse(localStorage.getItem(LS.behaviorTypes)); }
+  function setBehaviorTypes(arr){ localStorage.setItem(LS.behaviorTypes, JSON.stringify(arr)); }
+
+  function getClasses(){ return JSON.parse(localStorage.getItem(LS.classes)); }
+  function setClasses(arr){ localStorage.setItem(LS.classes, JSON.stringify(arr)); }
+
+  function getPoints(){ return JSON.parse(localStorage.getItem(LS.points)); }
+  function setPoints(obj){ localStorage.setItem(LS.points, JSON.stringify(obj)); }
+
+  function getDowngrades(){ return JSON.parse(localStorage.getItem(LS.downgrades)); }
+  function setDowngrades(obj){ localStorage.setItem(LS.downgrades, JSON.stringify(obj)); }
+
+  const historyStack = ["home"];
+  function showPage(id){
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+  }
+  function goTo(id){ historyStack.push(id); showPage(id); }
+  function goBack(){ if (historyStack.length > 1) historyStack.pop(); showPage(historyStack[historyStack.length - 1]); }
+  function goHome(){ historyStack.push("home"); showPage("home"); }
+  function isAdminAuthed(){ return true; }
+
+  function loginAdmin(){
+    goTo("adminDashboard");
+    renderBehaviorTypes();
+    renderClasses();
+    renderPointsManage();
+  }
+
+  function logoutAdmin(){
+    goHome();
+  }
+
+  function goToAdmin(pageId){
+    if (pageId === "initBehaviorTypes") renderBehaviorTypes();
+    if (pageId === "initClasses") renderClasses();
+    if (pageId === "managePoints") renderPointsManage();
+    if (pageId === "weeklyUpdate") initWeeklyPage();
+    if (pageId === "semesterSummary") initSemesterPages();
+    if (pageId === "semesterViolations") initSemesterPages();
+    goTo(pageId);
+  }
+
+  function changePassword(type, inputId){
+    const newPass = (document.getElementById(inputId).value || "").trim();
+    if (!newPass) return alert("Mật khẩu không được để trống.");
+    if (newPass.length < 4) return alert("Mật khẩu nên từ 4 ký tự trở lên.");
+    const p = getPasswords();
+    p[type] = newPass;
+    setPasswords(p);
+    document.getElementById(inputId).value = "";
+    alert("Đổi mật khẩu thành công ✅");
+  }
+
+  function addBehaviorType(){
+    if (!isAdminAuthed()) return alert("Bạn cần đăng nhập admin trước.");
+
+    const type = document.getElementById("btType").value;
+    const name = (document.getElementById("btName").value || "").trim();
+    let points = Number(document.getElementById("btPoints").value);
+
+    if (!name) return alert("Vui lòng nhập tên loại.");
+    if (!Number.isFinite(points) || points === 0) {
+      return alert("Điểm phải là số và khác 0.");
+    }
+
+    if (type === "vi_pham") points = -Math.abs(points);
+    else points = Math.abs(points);
+
+    const arr = getBehaviorTypes();
+
+    arr.push({
+      id: uid(),
+      type,
+      name,
+      points
+    });
+
+    setBehaviorTypes(arr);
+
+    document.getElementById("btName").value = "";
+    document.getElementById("btPoints").value = "";
+
+    renderBehaviorTypes();
+    renderBehaviorTypeSelects();
+  }
+
+  function saveBehaviorTypeRow(id){
+    const row = document.querySelector(
+      '#btTable tr[data-id="' + CSS.escape(String(id)) + '"]'
+    );
+
+    if (!row) return;
+
+    const arr = getBehaviorTypes();
+    const item = arr.find(x => String(x.id) === String(id));
+
+    if (!item) return;
+
+    const nameInput = row.querySelector(".bt-edit-name");
+    const typeSelect = row.querySelector(".bt-edit-type");
+    const pointsInput = row.querySelector(".bt-edit-points");
+
+    item.name = (nameInput?.value || "").trim();
+
+    if (!item.name) {
+      return alert("Tên loại không được để trống.");
+    }
+
+    item.type = typeSelect?.value === "tich_cuc"
+      ? "tich_cuc"
+      : "vi_pham";
+
+    let points = Number(pointsInput?.value);
+
+    if (!Number.isFinite(points) || points === 0) {
+      return alert("Điểm phải là số và khác 0.");
+    }
+
+    item.points = item.type === "vi_pham"
+      ? -Math.abs(points)
+      : Math.abs(points);
+
+    setBehaviorTypes(arr);
+
+    renderBehaviorTypes();
+    renderBehaviorTypeSelects();
+
+    try {
+      if (typeof render === "function") render();
+    } catch (e) {}
+  }
+
+  function saveAllBehaviorTypes(){
+    const arr = getBehaviorTypes();
+    const rows = document.querySelectorAll("#btTable tr[data-id]");
+
+    for (const row of rows){
+      const id = row.dataset.id;
+      const item = arr.find(x => String(x.id) === String(id));
+
+      if (!item) continue;
+
+      const nameInput = row.querySelector(".bt-edit-name");
+      const typeSelect = row.querySelector(".bt-edit-type");
+      const pointsInput = row.querySelector(".bt-edit-points");
+
+      const name = (nameInput?.value || "").trim();
+      let points = Number(pointsInput?.value);
+
+      if (!name) {
+        return alert("Có dòng đang để trống tên loại.");
+      }
+
+      if (!Number.isFinite(points) || points === 0) {
+        return alert("Điểm phải là số và khác 0.");
+      }
+
+      item.name = name;
+      item.type = typeSelect?.value === "tich_cuc"
+        ? "tich_cuc"
+        : "vi_pham";
+
+      item.points = item.type === "vi_pham"
+        ? -Math.abs(points)
+        : Math.abs(points);
+    }
+
+    setBehaviorTypes(arr);
+
+    renderBehaviorTypes();
+    renderBehaviorTypeSelects();
+
+    try {
+      if (typeof render === "function") render();
+    } catch (e) {}
+
+    alert("Đã lưu tất cả loại vi phạm và tích cực.");
+  }
+
+  function deleteBehaviorType(id){
+    if (!confirm("Xóa loại này?")) return;
+
+    setBehaviorTypes(
+      getBehaviorTypes().filter(
+        x => String(x.id) !== String(id)
+      )
+    );
+
+    renderBehaviorTypes();
+    renderBehaviorTypeSelects();
+  }
+
+  function moveBehaviorType(id, dir){
+    const arr = getBehaviorTypes();
+    const idx = arr.findIndex(
+      x => String(x.id) === String(id)
+    );
+
+    if (idx < 0) return;
+
+    const target = idx + dir;
+
+    if (target < 0 || target >= arr.length) return;
+
+    [arr[idx], arr[target]] =
+      [arr[target], arr[idx]];
+
+    setBehaviorTypes(arr);
+
+    renderBehaviorTypes();
+    renderBehaviorTypeSelects();
+  }
+
+  function restoreDefaultBehaviorTypes(){
+    if (!confirm(
+      "Khôi phục danh mục mặc định?\n\n" +
+      "Danh mục hiện tại sẽ được thay thế."
+    )) {
+      return;
+    }
+
+    const copy = DEFAULT_BEHAVIOR_TYPES.map(x => ({
+      ...x,
+      id: uid()
+    }));
+
+    setBehaviorTypes(copy);
+
+    renderBehaviorTypes();
+    renderBehaviorTypeSelects();
+
+    try {
+      if (typeof render === "function") render();
+    } catch (e) {}
+
+    alert("Đã khôi phục danh mục mặc định.");
+  }
+
+  function renderBehaviorTypes(){
+    const tbody =
+      document.getElementById("btTable");
+
+    if (!tbody) return;
+
+    const arr = getBehaviorTypes();
+
+    if (!Array.isArray(arr) || arr.length === 0){
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align:center;">
+            Chưa có loại vi phạm/tích cực nào.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = arr.map((x, i) => `
+      <tr data-id="${escapeHtml(x.id)}">
+
+        <td>
+          <select class="bt-edit-type">
+            <option
+              value="vi_pham"
+              ${x.type === "vi_pham" ? "selected" : ""}
+            >
+              Vi phạm
+            </option>
+
+            <option
+              value="tich_cuc"
+              ${x.type === "tich_cuc" ? "selected" : ""}
+            >
+              Tích cực
+            </option>
+          </select>
+        </td>
+
+        <td>
+          <input
+            type="text"
+            class="bt-edit-name"
+            value="${escapeHtml(x.name)}"
+            placeholder="Nhập nội dung..."
+          />
+        </td>
+
+        <td class="num">
+          <input
+            type="number"
+            class="bt-edit-points"
+            value="${Number(x.points) || 0}"
+            step="1"
+          />
+        </td>
+
+        <td class="num">
+          <button
+            class="iconBtn"
+            ${i > 0 ? "" : "disabled"}
+            title="Lên"
+            onclick="moveBehaviorType('${escapeHtml(x.id)}', -1)"
+          >
+            ↑
+          </button>
+
+          <button
+            class="iconBtn"
+            ${i < arr.length - 1 ? "" : "disabled"}
+            title="Xuống"
+            onclick="moveBehaviorType('${escapeHtml(x.id)}', 1)"
+          >
+            ↓
+          </button>
+        </td>
+
+        <td>
+          <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+
+            <button
+              class="btn"
+              type="button"
+              onclick="saveBehaviorTypeRow('${escapeHtml(x.id)}')"
+            >
+              💾 Lưu
+            </button>
+
+            <button
+              class="xbtn"
+              type="button"
+              title="Xóa"
+              onclick="deleteBehaviorType('${escapeHtml(x.id)}')"
+            >
+              X
+            </button>
+
+          </div>
+        </td>
+
+      </tr>
+    `).join("");
+  }
+
+  function semesterMeta(sem){
+    if (sem === "HKI") return { sem: "HKI", startWeek: 1, endWeek: 18 };
+    return { sem: "HKII", startWeek: 19, endWeek: 36 };
+  }
+
+  function addClass(){
+    if (!isAdminAuthed()) return alert("Bạn cần đăng nhập admin trước.");
+    const baseName = (document.getElementById("className").value || "").trim();
+    const sem = document.getElementById("semester").value;
+    if (!baseName) return alert("Vui lòng nhập tên lớp.");
+    const meta = semesterMeta(sem);
+    const code = `${baseName}_${meta.sem}`;
+    const classes = getClasses();
+    if (classes.some(c => c.code.toLowerCase() === code.toLowerCase())) return alert("Lớp này đã tồn tại rồi.");
+    classes.push({ id: uid(), baseName, semester: meta.sem, startWeek: meta.startWeek, endWeek: meta.endWeek, code, students: [] });
+    setClasses(classes);
+    document.getElementById("className").value = "";
+    renderClasses();
+    document.getElementById("classSelect").value = classes[classes.length - 1].id;
+    renderStudents();
+  }
+
+  function deleteClass(classId){
+    if (!confirm("Xóa lớp học này và toàn bộ học sinh trong lớp?")) return;
+    setClasses(getClasses().filter(c => c.id !== classId));
+    renderClasses();
+  }
+
+  function addStudent(){
+    if (!isAdminAuthed()) return alert("Bạn cần đăng nhập admin trước.");
+    const classId = document.getElementById("classSelect").value;
+    const name = (document.getElementById("studentName").value || "").trim();
+    if (!classId) return alert("Chưa chọn lớp học.");
+    if (!name) return alert("Vui lòng nhập họ và tên học sinh.");
+    const classes = getClasses();
+    const cls = classes.find(c => c.id === classId);
+    if (!cls) return alert("Lớp không tồn tại.");
+    cls.students.push({ id: uid(), name });
+    setClasses(classes);
+    document.getElementById("studentName").value = "";
+    renderStudents();
+  }
+
+  function clearBulkBox(){
+    const box = document.getElementById("bulkStudents");
+    const hint = document.getElementById("bulkHint");
+    if (box) box.value = "";
+    if (hint) hint.innerText = "";
+  }
+
+  function normalizeName(s){
+    return String(s||"").trim().replace(/\s+/g," ").toLowerCase();
+  }
+
+  function addStudentsBulk(){
+    if (!isAdminAuthed()) return alert("Bạn cần đăng nhập admin trước.");
+    const classId = document.getElementById("classSelect").value;
+    if (!classId) return alert("Chưa chọn lớp học.");
+
+    const raw = (document.getElementById("bulkStudents").value || "").trim();
+    if (!raw) return alert("Bạn chưa dán danh sách học sinh.");
+
+    const classes = getClasses();
+    const cls = classes.find(c => c.id === classId);
+    if (!cls) return alert("Lớp không tồn tại.");
+
+    const before = cls.students.length;
+    const existed = new Set(cls.students.map(s => normalizeName(s.name)));
+
+    const lines = raw.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+    let added = 0, skipped = 0;
+
+    for (const name of lines){
+      const key = normalizeName(name);
+      if (!key) { skipped++; continue; }
+      if (existed.has(key)) { skipped++; continue; }
+      cls.students.push({ id: uid(), name });
+      existed.add(key);
+      added++;
+    }
+
+    setClasses(classes);
+    renderStudents();
+
+    const hint = document.getElementById("bulkHint");
+    hint.innerText = `Đã thêm: ${added} • Bỏ qua (trống / trùng): ${skipped} • Tổng học sinh: ${before} → ${cls.students.length}`;
+  }
+
+  function deleteStudent(classId, studentId){
+    const classes = getClasses();
+    const cls = classes.find(c => c.id === classId);
+    if (!cls) return;
+    cls.students = cls.students.filter(s => s.id !== studentId);
+    setClasses(classes);
+    renderStudents();
+  }
+
+  function renderClasses(){
+    const tbody = document.getElementById("classTable");
+    const select = document.getElementById("classSelect");
+    if (!tbody || !select) return;
+    const classes = getClasses();
+
+    tbody.innerHTML = classes.length === 0
+      ? `<tr><td colspan="4">Chưa có lớp học nào.</td></tr>`
+      : classes.map(c => `
+        <tr>
+          <td><b>${escapeHtml(c.code)}</b></td>
+          <td class="num">${c.semester}</td>
+          <td>Tuần ${c.startWeek} → ${c.endWeek}</td>
+          <td><button class="xbtn" title="Xóa lớp" onclick="deleteClass('${c.id}')">X</button></td>
+        </tr>
+      `).join("");
+
+    select.innerHTML = classes.length === 0
+      ? `<option value="">(Chưa có lớp)</option>`
+      : classes.map(c => `<option value="${c.id}">${escapeHtml(c.code)}</option>`).join("");
+
+    renderStudents();
+  }
+
+  function renderStudents(){
+    const classId = document.getElementById("classSelect")?.value || "";
+    const tbody = document.getElementById("studentTable");
+    const hint = document.getElementById("studentHint");
+    if (!tbody || !hint) return;
+    const classes = getClasses();
+    const cls = classes.find(c => c.id === classId);
+
+    if (!classId || !cls){
+      hint.innerText = "Hãy chọn một lớp để xem / thêm học sinh.";
+      tbody.innerHTML = `<tr><td colspan="2">Chưa chọn lớp.</td></tr>`;
+      return;
+    }
+
+    hint.innerText = `Đang quản lí học sinh lớp: ${cls.code} • Tổng: ${cls.students.length} học sinh`;
+    tbody.innerHTML = cls.students.length === 0
+      ? `<tr><td colspan="2">Chưa có học sinh trong lớp này.</td></tr>`
+      : cls.students.map(s => `
+          <tr>
+            <td>${escapeHtml(s.name)}</td>
+            <td><button class="xbtn" title="Xóa học sinh" onclick="deleteStudent('${cls.id}','${s.id}')">X</button></td>
+          </tr>
+        `).join("");
+  }
+
+  const pointsCtx = { classId: localStorage.getItem(LS.pointsSelectedClass) || "" };
+
+  function renderPointsManage(){
+    const sel = document.getElementById("pointsClassSelect");
+    const info = document.getElementById("pointsClassInfo");
+    if (!sel || !info) return;
+
+    const classes = getClasses();
+    sel.innerHTML = classes.length === 0
+      ? `<option value="">(Chưa có lớp)</option>`
+      : classes.map(c => `<option value="${c.id}">${escapeHtml(c.code)}</option>`).join("");
+
+    if (pointsCtx.classId && classes.some(c => c.id === pointsCtx.classId)) sel.value = pointsCtx.classId;
+    updatePointsClassInfo();
+  }
+
+  function setPointsClass(){
+    const sel = document.getElementById("pointsClassSelect");
+    if (!sel) return;
+    pointsCtx.classId = sel.value || "";
+    localStorage.setItem(LS.pointsSelectedClass, pointsCtx.classId);
+    updatePointsClassInfo();
+    alert(pointsCtx.classId ? "Đã chọn lớp ✅" : "Bạn chưa chọn lớp.");
+  }
+
+  function updatePointsClassInfo(){
+    const info = document.getElementById("pointsClassInfo");
+    if (!info) return;
+    const cls = getClasses().find(c => c.id === pointsCtx.classId);
+    info.innerText = cls
+      ? `Đang chọn: ${cls.code} • ${cls.semester} • Tuần ${cls.startWeek} → ${cls.endWeek} • ${cls.students.length} học sinh`
+      : "Hiện chưa chọn lớp để quản lí điểm.";
+  }
+
+  function goPointsPage(pageId){
+    if (!pointsCtx.classId){ alert("Bạn cần chọn lớp học trước."); return; }
+    const cls = getClasses().find(c => c.id === pointsCtx.classId);
+    if (!cls){ alert("Lớp đã chọn không còn tồn tại. Vui lòng chọn lại."); pointsCtx.classId=""; localStorage.setItem(LS.pointsSelectedClass,""); renderPointsManage(); return; }
+    if (cls.students.length === 0){ alert("Lớp này chưa có học sinh. Vui lòng thêm học sinh trước."); return; }
+    if (pageId === "weeklyUpdate") goToAdmin("weeklyUpdate");
+    if (pageId === "semesterSummary") goToAdmin("semesterSummary");
+    if (pageId === "semesterViolations") goToAdmin("semesterViolations");
+  }
+
+  /* =========================
+     ✅ Autocomplete helpers
+  ========================= */
+  function normVN(s){
+    return String(s || "")
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function setupAutocompleteOnce({ inputId, listId, getItems, onPick }){
+    const input = document.getElementById(inputId);
+    const list  = document.getElementById(listId);
+    if (!input || !list) return;
+
+    if (input.dataset.acBound === "1") return;
+    input.dataset.acBound = "1";
+
+    const close = () => { list.style.display = "none"; list.innerHTML = ""; };
+    const open  = () => { list.style.display = "block"; };
+
+    function render(){
+      const q = normVN(input.value);
+      const items = (getItems && getItems()) || [];
+      const filtered = q ? items.filter(it => normVN(it.label).includes(q)) : items;
+      const top = filtered.slice(0, 12);
+
+      if (top.length === 0){
+        list.innerHTML = `<div class="ac-item"><small>Không có kết quả</small></div>`;
+        open();
+        return;
+      }
+
+      list.innerHTML = top.map(it => `
+        <div class="ac-item" data-value="${escapeAttr(it.value)}">
+          ${escapeHtml(it.label)}
+          ${it.sub ? `<br><small>${escapeHtml(it.sub)}</small>` : ""}
+        </div>
+      `).join("");
+      open();
+    }
+
+    input.addEventListener("input", render);
+    input.addEventListener("focus", render);
+
+    input.addEventListener("change", () => {
+      const q = normVN(input.value);
+      const items = (getItems && getItems()) || [];
+      if (!q) return;
+
+      const exact = items.find(it => normVN(it.label) === q);
+      if (exact){
+        input.value = exact.label;
+        onPick && onPick(exact);
+        return;
+      }
+
+      const contains = items.filter(it => normVN(it.label).includes(q));
+      if (contains.length === 1){
+        input.value = contains[0].label;
+        onPick && onPick(contains[0]);
+      }
+    });
+
+    list.addEventListener("mousedown", (e) => {
+      const el = e.target.closest(".ac-item");
+      if (!el) return;
+      const val = el.getAttribute("data-value");
+      const items = (getItems && getItems()) || [];
+      const chosen = items.find(it => String(it.value) === String(val));
+      if (chosen){
+        input.value = chosen.label;
+        onPick && onPick(chosen);
+      }
+      close();
+    });
+
+    input.addEventListener("blur", () => setTimeout(close, 150));
+  }
+
+  function bindWeeklyAutocompletes(){
+    setupAutocompleteOnce({
+      inputId: "weekStudentSearch",
+      listId: "weekStudentSuggest",
+      getItems: () => {
+        const cls = getClasses().find(c => c.id === pointsCtx.classId);
+        return cls ? cls.students.map(s => ({ label: s.name, value: s.id })) : [];
+      },
+      onPick: (it) => {
+        document.getElementById("weekStudentSelect").value = it.value;
+        onWeeklySelectionChange();
+      }
+    });
+
+    setupAutocompleteOnce({
+      inputId: "violationTypeSearch",
+      listId: "violationSuggest",
+      getItems: () => getBehaviorTypes()
+        .filter(t => t.type === "vi_pham")
+        .map(t => ({ label: t.name, value: t.id, sub: `Điểm: ${t.points}` })),
+      onPick: (it) => { document.getElementById("violationTypeSelect").value = it.value; }
+    });
+
+    setupAutocompleteOnce({
+      inputId: "positiveTypeSearch",
+      listId: "positiveSuggest",
+      getItems: () => getBehaviorTypes()
+        .filter(t => t.type === "tich_cuc")
+        .map(t => ({ label: t.name, value: t.id, sub: `Điểm: +${t.points}` })),
+      onPick: (it) => { document.getElementById("positiveTypeSelect").value = it.value; }
+    });
+  }
+
+  /* =========================
+     Weekly update
+  ========================= */
+  let wkTempViolations = [];
+  let wkTempPositives = [];
+
+  function renderTempLists(){
+    const vioBox = document.getElementById("vioList");
+    const posBox = document.getElementById("posList");
+    const typeMap = new Map(getBehaviorTypes().map(t => [t.id, t]));
+    if (!vioBox || !posBox) return;
+
+    if (wkTempViolations.length === 0) {
+      vioBox.innerHTML = `<span class="muted">Chưa có vi phạm.</span>`;
+    } else {
+      vioBox.innerHTML = wkTempViolations.map((it, idx) => {
+        const t = typeMap.get(it.typeId);
+        const name = t ? t.name : "(Đã xóa loại)";
+        const detail = (it.detail || "").trim();
+        const line = detail ? `${name} (${it.count} lần: ${detail})` : `${name} (${it.count} lần)`;
+        return `
+          <div class="itemRow">
+            <div class="itemMain">${escapeHtml(line)}</div>
+            <button class="xbtn" title="Xóa" onclick="removeTempViolation(${idx})">X</button>
+          </div>
+        `;
+      }).join("");
+    }
+
+    if (wkTempPositives.length === 0) {
+      posBox.innerHTML = `<span class="muted">Chưa có tích cực.</span>`;
+    } else {
+      posBox.innerHTML = wkTempPositives.map((it, idx) => {
+        const t = typeMap.get(it.typeId);
+        const name = t ? t.name : "(Đã xóa loại)";
+        const detail = (it.detail || "").trim();
+        const line = detail ? `${name} (${it.count} lần: ${detail})` : `${name} (${it.count} lần)`;
+        return `
+          <div class="itemRow">
+            <div class="itemMain">${escapeHtml(line)}</div>
+            <button class="xbtn" title="Xóa" onclick="removeTempPositive(${idx})">X</button>
+          </div>
+        `;
+      }).join("");
+    }
+  }
+
+  function addTempViolation(){
+    const typeId = document.getElementById("violationTypeSelect").value;
+    const count = safeInt(document.getElementById("violationCount").value, 1);
+    const detail = (document.getElementById("violationDetail").value || "").trim();
+    if (!typeId) return alert("Vui lòng chọn loại vi phạm (gõ để tìm rồi bấm chọn).");
+    wkTempViolations.push({ typeId, count, detail });
+    document.getElementById("violationDetail").value = "";
+    document.getElementById("violationTypeSelect").value = "";
+    const vin = document.getElementById("violationTypeSearch");
+    if (vin) vin.value = "";
+    renderTempLists();
+  }
+
+  function addTempPositive(){
+    const typeId = document.getElementById("positiveTypeSelect").value;
+    const count = safeInt(document.getElementById("positiveCount").value, 1);
+    const detail = (document.getElementById("positiveDetail").value || "").trim();
+    if (!typeId) return alert("Vui lòng chọn loại tích cực (gõ để tìm rồi bấm chọn).");
+    wkTempPositives.push({ typeId, count, detail });
+    document.getElementById("positiveDetail").value = "";
+    document.getElementById("positiveTypeSelect").value = "";
+    const pin = document.getElementById("positiveTypeSearch");
+    if (pin) pin.value = "";
+    renderTempLists();
+  }
+
+  function removeTempViolation(idx){ wkTempViolations.splice(idx, 1); renderTempLists(); }
+  function removeTempPositive(idx){ wkTempPositives.splice(idx, 1); renderTempLists(); }
+
+  function onWeeklySelectionChange(){
+    renderWeeklySummary();
+    renderSavedWeeklyDataBox();
+  }
+
+  function recHasAny(rec){
+    if(!rec) return false;
+    const v = (rec.violations || []).length;
+    const p = (rec.positives || []).length;
+    const a = (rec.absences || []).length;
+    const n = (rec.notes || "").trim().length;
+    return (v + p + a) > 0 || n > 0;
+  }
+
+  function renderSavedWeeklyDataBox(){
+    const cls = getClasses().find(c => c.id === pointsCtx.classId);
+    if (!cls) return;
+
+    const week = Number(document.getElementById("weekSelect")?.value);
+    const studentId = document.getElementById("weekStudentSelect")?.value;
+
+    const weekLabel = document.getElementById("savedWeekLabel");
+    const stuLabel = document.getElementById("savedStudentLabel");
+    const box = document.getElementById("savedDataBox");
+
+    if (!weekLabel || !stuLabel || !box) return;
+
+    const student = cls.students.find(s => s.id === studentId);
+    weekLabel.innerText = Number.isFinite(week) ? week : "-";
+    stuLabel.innerText = student ? student.name : "-";
+
+    const data = getPoints();
+    const rec = (((data[cls.id] || {})[week] || {})[studentId]);
+
+    if (!rec || !recHasAny(rec)){
+      box.innerHTML = "Chưa có dữ liệu đã lưu cho học sinh này ở tuần này.";
+      return;
+    }
+
+    const typeMap = new Map(getBehaviorTypes().map(t => [t.id, t]));
+    const vioText = formatItemsAggSemicolon(rec.violations || [], typeMap) || "-";
+    const posText = formatItemsAggSemicolon(rec.positives || [], typeMap) || "-";
+
+    const absList = rec.absences || [];
+    const absText = formatAbsenceSummary(absList);
+
+    const noteText = (rec.notes || "").trim() || "-";
+
+    box.innerHTML = `
+      <div><b>Vi phạm:</b> ${escapeHtml(vioText)}</div>
+      <div><b>Tích cực:</b> ${escapeHtml(posText)}</div>
+      <div><b>Buổi nghỉ:</b> ${escapeHtml(absText)}</div>
+      <div><b>Ghi chú:</b> ${escapeHtml(noteText)}</div>
+    `;
+  }
+
+  function deleteSavedWeekly(mode){
+    const cls = getClasses().find(c => c.id === pointsCtx.classId);
+    if (!cls) return alert("Không tìm thấy lớp đang chọn.");
+
+    const week = Number(document.getElementById("weekSelect")?.value);
+    const studentId = document.getElementById("weekStudentSelect")?.value;
+    if (!Number.isFinite(week) || !studentId) return alert("Chưa chọn tuần hoặc học sinh.");
+
+    const data = getPoints();
+    if (!data[cls.id] || !data[cls.id][week] || !data[cls.id][week][studentId]) {
+      return alert("Chưa có dữ liệu đã lưu để xóa.");
+    }
+
+    const student = cls.students.find(s => s.id === studentId);
+    const stuName = student ? student.name : "học sinh";
+
+    let msg = "";
+    if (mode === "all") msg = `Xóa TOÀN BỘ dữ liệu đã lưu của ${stuName} ở Tuần ${week}?`;
+    if (mode === "violations") msg = `Xóa phần VI PHẠM đã lưu của ${stuName} ở Tuần ${week}?`;
+    if (mode === "positives") msg = `Xóa phần TÍCH CỰC đã lưu của ${stuName} ở Tuần ${week}?`;
+    if (mode === "absences") msg = `Xóa phần BUỔI NGHỈ đã lưu của ${stuName} ở Tuần ${week}?`;
+    if (mode === "notes") msg = `Xóa phần GHI CHÚ đã lưu của ${stuName} ở Tuần ${week}?`;
+
+    if (!confirm(msg)) return;
+
+    const rec = data[cls.id][week][studentId];
+
+    if (mode === "all") {
+      delete data[cls.id][week][studentId];
+    } else {
+      if (mode === "violations") rec.violations = [];
+      if (mode === "positives") rec.positives = [];
+      if (mode === "absences") rec.absences = [];
+      if (mode === "notes") rec.notes = "";
+
+      if (!recHasAny(rec)) {
+        delete data[cls.id][week][studentId];
+      } else {
+        data[cls.id][week][studentId] = rec;
+      }
+    }
+
+    if (data[cls.id] && data[cls.id][week] && Object.keys(data[cls.id][week]).length === 0) {
+      delete data[cls.id][week];
+    }
+    if (data[cls.id] && Object.keys(data[cls.id]).length === 0) {
+      delete data[cls.id];
+    }
+
+    setPoints(data);
+    onWeeklySelectionChange();
+    alert("Đã xóa ✅");
+  }
+
+
+  function goWeeklySubPage(id){
+    initWeeklySubPages();
+    if (id === "weeklyAbsence") renderAbsenceTable();
+    goTo(id);
+  }
+
+  function goToWeeklyMenu(){
+    initWeeklySubPages();
+    goTo("weeklyUpdate");
+  }
+
+  function initWeeklySubPages(){
+    const cls = getClasses().find(c => c.id === pointsCtx.classId);
+    if (!cls) return;
+    [["wkClassLabel","wpClassLabel","waClassLabel"],["wkSemLabel","wpSemLabel","waSemLabel"],["wkRangeLabel","wpRangeLabel","waRangeLabel"]].forEach((ids,i)=>{
+      ids.forEach(id=>{const el=document.getElementById(id); if(el) el.innerText=i===0?cls.code:i===1?cls.semester:`Tuần ${cls.startWeek} → ${cls.endWeek}`;});
+    });
+    const sel=document.getElementById("absenceWeekSelect");
+    if(sel){
+      const old=sel.value;
+      sel.innerHTML="";
+      for(let w=cls.startWeek;w<=cls.endWeek;w++) sel.insertAdjacentHTML("beforeend",`<option value="${w}">Tuần ${w}</option>`);
+      if([...sel.options].some(o=>o.value===old)) sel.value=old;
+    }
+  }
+
+  function absenceInputName(studentId, sessionKey){ return `absence_${studentId}_${sessionKey}`; }
+
+  function renderAbsenceTable(){
+    const cls=getClasses().find(c=>c.id===pointsCtx.classId);
+    const tbody=document.getElementById("absenceTableBody");
+    if(!cls||!tbody)return;
+    const week=Number(document.getElementById("absenceWeekSelect").value);
+    const sessions=buildAbsenceSessions();
+    const data=getPoints();
+    tbody.innerHTML=cls.students.map(st=>{
+      const rec=(((data[cls.id]||{})[week]||{})[st.id])||{};
+      const saved=new Set(rec.absences||[]);
+      return `<tr><td><b>${escapeHtml(st.name)}</b></td>`+sessions.map(x=>{
+        const cp=saved.has(`${x.label} - Có phép`);
+        const kp=saved.has(`${x.label} - Không phép`) || saved.has(x.label);
+        const n=absenceInputName(st.id,x.key);
+        return `<td><div class="absence-choice" title="${escapeAttr(x.label)}">
+          <label title="Nghỉ có phép"><input type="radio" name="${n}" value="Có phép" ${cp?"checked":""}> P</label>
+          <label title="Nghỉ không phép"><input type="radio" name="${n}" value="Không phép" ${kp?"checked":""}> K</label>
+          <button type="button" class="absence-clear" title="Bỏ nghỉ buổi này" onclick="clearAbsenceCell('${escapeAttr(st.id)}','${escapeAttr(x.key)}')">Bỏ</button>
+        </div></td>`;
+      }).join('')+`</tr>`;
+    }).join('');
+    const h=document.getElementById("absenceHint");
+    if(h)h.innerText=`Đang nhập buổi nghỉ cho ${cls.code} • Tuần ${week} • P = có phép • K = không phép`;
+  }
+
+  function clearAbsenceCell(studentId,key){
+    document.querySelectorAll(`input[name="${absenceInputName(studentId,key)}"]`).forEach(x=>x.checked=false);
+  }
+
+  function clearAbsenceWeek(){
+    document.querySelectorAll("#absenceTableBody input[type=radio]").forEach(x=>x.checked=false);
+  }
+
+  function saveAbsenceWeek(){
+    const cls=getClasses().find(c=>c.id===pointsCtx.classId);
+    if(!cls)return alert("Không tìm thấy lớp.");
+    const week=Number(document.getElementById("absenceWeekSelect").value);
+    const data=getPoints();
+    if(!data[cls.id])data[cls.id]={};
+    if(!data[cls.id][week])data[cls.id][week]={};
+
+    cls.students.forEach(s=>{
+      const abs=[];
+      buildAbsenceSessions().forEach(x=>{
+        const checked=document.querySelector(`input[name="${absenceInputName(s.id,x.key)}"]:checked`);
+        if(checked)abs.push(`${x.label} - ${checked.value}`);
+      });
+      const rec=data[cls.id][week][s.id]||{violations:[],positives:[],absences:[],notes:""};
+      rec.absences=abs;
+      if(recHasAny(rec)) data[cls.id][week][s.id]=rec;
+      else delete data[cls.id][week][s.id];
+    });
+
+    if(!Object.keys(data[cls.id][week]).length)delete data[cls.id][week];
+    if(!Object.keys(data[cls.id]).length)delete data[cls.id];
+    setPoints(data);
+    renderAbsenceTable();
+    alert("Đã lưu cập nhật buổi nghỉ ✅");
+  }
+
+  function initWeeklyPage(){
+    const cls = getClasses().find(c => c.id === pointsCtx.classId);
+    if (!cls) return;
+
+    document.getElementById("wkClassLabel").innerText = cls.code;
+    document.getElementById("wkSemLabel").innerText = cls.semester;
+    document.getElementById("wkRangeLabel").innerText = `Tuần ${cls.startWeek} → ${cls.endWeek}`;
+
+    const weekSelect = document.getElementById("weekSelect");
+    weekSelect.innerHTML = "";
+    for (let w = cls.startWeek; w <= cls.endWeek; w++){
+      const opt = document.createElement("option");
+      opt.value = String(w);
+      opt.textContent = `Tuần ${w}`;
+      weekSelect.appendChild(opt);
+    }
+
+    const stuSelect = document.getElementById("weekStudentSelect");
+    stuSelect.innerHTML = cls.students.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join("");
+
+    const first = cls.students[0];
+    if (first){
+      stuSelect.value = first.id;
+      const inp = document.getElementById("weekStudentSearch");
+      if (inp) inp.value = first.name;
+    }
+
+    fillCountSelect("violationCount");
+    fillCountSelect("positiveCount");
+    renderBehaviorTypeSelects();
+    bindWeeklyAutocompletes();
+
+    const bt = getBehaviorTypes();
+    const hasV = bt.some(x => x.type === "vi_pham");
+    const hasP = bt.some(x => x.type === "tich_cuc");
+    let hint = "";
+    if (!hasV) hint += "⚠️ Chưa có loại VI PHẠM. Hãy tạo ở Quản lí Lớp học → Khởi tạo vi phạm và tích cực.\n";
+    if (!hasP) hint += "⚠️ Chưa có loại TÍCH CỰC. Hãy tạo ở Quản lí Lớp học → Khởi tạo vi phạm và tích cực.\n";
+    document.getElementById("wkHint").innerText = hint.trim();
+
+    resetWeeklyForm();
+    initWeeklySubPages();
+    onWeeklySelectionChange();
+  }
+
+  function fillCountSelect(id){
+    const sel = document.getElementById(id);
+    sel.innerHTML = "";
+    for (let i=1;i<=10;i++){
+      const opt = document.createElement("option");
+      opt.value = String(i);
+      opt.textContent = `${i} lần`;
+      sel.appendChild(opt);
+    }
+  }
+
+  function renderBehaviorTypeSelects(){
+    const types = getBehaviorTypes();
+    const vSel = document.getElementById("violationTypeSelect");
+    const pSel = document.getElementById("positiveTypeSelect");
+    if (!vSel || !pSel) return;
+
+    const vOpts = [
+      `<option value="">(Chọn loại vi phạm)</option>`,
+      ...types.filter(t => t.type === "vi_pham").map(t => `<option value="${t.id}">${escapeHtml(t.name)} (${t.points})</option>`)
+    ];
+    const pOpts = [
+      `<option value="">(Chọn loại tích cực)</option>`,
+      ...types.filter(t => t.type === "tich_cuc").map(t => `<option value="${t.id}">${escapeHtml(t.name)} (+${t.points})</option>`)
+    ];
+
+    vSel.innerHTML = vOpts.join("");
+    pSel.innerHTML = pOpts.join("");
+  }
+
+  function buildAbsenceSessions(){
+    const days = [
+      {k:"hai", t:"thứ hai"},
+      {k:"ba", t:"thứ ba"},
+      {k:"tu", t:"thứ tư"},
+      {k:"nam", t:"thứ năm"},
+      {k:"sau", t:"thứ sáu"},
+      {k:"bay", t:"thứ bảy"},
+    ];
+    const out = [];
+    for (const d of days){
+      out.push({ key:`sang_${d.k}`, label:`Sáng ${d.t}` });
+      out.push({ key:`chieu_${d.k}`, label:`Chiều ${d.t}` });
+    }
+    return out;
+  }
+
+  function renderAbsenceGrid(){
+    const grid = document.getElementById("absenceGrid");
+    grid.innerHTML = "";
+    buildAbsenceSessions().forEach(s => {
+      const id = "ab_" + s.key;
+      const div = document.createElement("div");
+      div.className = "cb-item";
+      div.innerHTML = `
+        <input type="checkbox" id="${id}" data-session="${escapeAttr(s.label)}"/>
+        <label for="${id}">${escapeHtml(s.label)}</label>
+      `;
+      grid.appendChild(div);
+    });
+  }
+
+  function clearAbsences(){
+    document.querySelectorAll('#absenceGrid input[type="checkbox"]').forEach(cb => cb.checked = false);
+  }
+
+  function getSelectedAbsences(){
+    const list = [];
+    document.querySelectorAll('#absenceGrid input[type="checkbox"]:checked').forEach(cb => {
+      const s = cb.getAttribute("data-session");
+      if (s) list.push(s);
+    });
+    return list;
+  }
+
+  function resetWeeklyForm(){
+    wkTempViolations = [];
+    wkTempPositives = [];
+    document.getElementById("violationTypeSelect").value = "";
+    document.getElementById("violationCount").value = "1";
+    document.getElementById("violationDetail").value = "";
+    const vin = document.getElementById("violationTypeSearch");
+    if (vin) vin.value = "";
+
+    document.getElementById("positiveTypeSelect").value = "";
+    document.getElementById("positiveCount").value = "1";
+    document.getElementById("positiveDetail").value = "";
+    const pin = document.getElementById("positiveTypeSearch");
+    if (pin) pin.value = "";
+
+    document.getElementById("weekNote").value = "";
+    renderTempLists();
+  }
+
+  function saveWeeklyEntry(){
+    const cls = getClasses().find(c => c.id === pointsCtx.classId);
+    if (!cls) return alert("Không tìm thấy lớp.");
+
+    const week = Number(document.getElementById("weekSelect").value);
+    const studentId = document.getElementById("weekStudentSelect").value;
+    if (!Number.isFinite(week)) return alert("Vui lòng chọn tuần.");
+    if (!studentId) return alert("Vui lòng chọn học sinh.");
+
+    const note = (document.getElementById("weekNote").value || "").trim();
+
+    if (wkTempViolations.length === 0 && wkTempPositives.length === 0 && !note){
+      return alert("Bạn chưa nhập gì cả (vi phạm / tích cực / nghỉ / ghi chú).");
+    }
+
+    const data = getPoints();
+    if (!data[cls.id]) data[cls.id] = {};
+    if (!data[cls.id][week]) data[cls.id][week] = {};
+    if (!data[cls.id][week][studentId]){
+      data[cls.id][week][studentId] = { violations: [], positives: [], absences: [], notes: "" };
+    }
+
+    const rec = data[cls.id][week][studentId];
+
+    for (const it of wkTempViolations){
+      rec.violations.push({ typeId: it.typeId, count: safeInt(it.count, 1), detail: (it.detail || "").trim() });
+    }
+    for (const it of wkTempPositives){
+      rec.positives.push({ typeId: it.typeId, count: safeInt(it.count, 1), detail: (it.detail || "").trim() });
+    }
+
+    if (note){
+      rec.notes = rec.notes ? (rec.notes + " | " + note) : note;
+    }
+
+    setPoints(data);
+    alert("Đã lưu cập nhật ✅");
+
+    resetWeeklyForm();
+    onWeeklySelectionChange();
+  }
+
+  function isWeekUpdated(classId, week){
+    const cls = getClasses().find(c => c.id === classId);
+    if (!cls) return false;
+    const pointsData = getPoints();
+    const weekData = (((pointsData[cls.id] || {})[week] || {}));
+    const ids = Object.keys(weekData);
+    if (ids.length === 0) return false;
+
+    for (const sid of ids){
+      const rec = weekData[sid];
+      if (!rec) continue;
+      const hasV = (rec.violations || []).length > 0;
+      const hasP = (rec.positives || []).length > 0;
+      const hasA = (rec.absences || []).length > 0;
+      const hasN = ((rec.notes || "").trim().length > 0);
+      if (hasV || hasP || hasA || hasN) return true;
+    }
+    return false;
+  }
+
+  function renderWeeklySummary(){
+    const cls = getClasses().find(c => c.id === pointsCtx.classId);
+    if (!cls) return;
+
+    const week = Number(document.getElementById("weekSelect").value);
+    document.getElementById("weeklySummaryTitle").innerText = `Bảng Tổng Kết Rèn Luyện của Tuần ${week}`;
+
+    const rows = computeWeeklyRows(cls.id, week);
+    const updated = isWeekUpdated(cls.id, week);
+    const featuredNames = updated ? computeWeeklyFeaturedNames(rows) : [];
+
+    document.getElementById("featuredStudentBox").innerText =
+      updated
+        ? (featuredNames.length ? featuredNames.join(" & ") : "Không có học sinh tiêu biểu trong tuần này.")
+        : "Chưa cập nhật học sinh tiêu biểu của Tuần.";
+
+    const tbody = document.getElementById("weeklySummaryTable");
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td><b>${escapeHtml(r.name)}</b></td>
+        <td>${escapeHtml(r.vioText || "-")}</td>
+        <td>${escapeHtml(r.posText || "-")}</td>
+        <td class="num"><b>${r.total}</b></td>
+        <td class="num">${escapeHtml(r.absText)}</td>
+        <td>${escapeHtml(r.notes || "-")}</td>
+      </tr>
+    `).join("");
+  }
+
+  function initSemesterPages(){
+    const cls = getClasses().find(c => c.id === pointsCtx.classId);
+    if (!cls) return;
+
+    document.getElementById("semClassLabel").innerText = cls.code;
+    document.getElementById("semSemLabel").innerText = cls.semester;
+    document.getElementById("semRangeLabel").innerText = `Tuần ${cls.startWeek} → ${cls.endWeek}`;
+
+    document.getElementById("vioClassLabel").innerText = cls.code;
+    document.getElementById("vioSemLabel").innerText = cls.semester;
+    document.getElementById("vioRangeLabel").innerText = `Tuần ${cls.startWeek} → ${cls.endWeek}`;
+
+    renderSemesterSummaryAdmin();
+    renderSemesterViolationsTable(pointsCtx.classId,'semesterViolationsStudentTable');
+  }
+
+  function renderSemesterSummaryAdmin(){
+    renderSemesterSummaryInto(pointsCtx.classId,'semesterFeaturedBox','semesterClassLevelTable','semesterStudentLevelTable',false);
+  }
+
+  function renderSemesterSummaryInto(classId, featuredBoxId, classLevelTableId, studentLevelTableId, readOnly){
+    const cls = getClasses().find(c => c.id === classId);
+    if (!cls) return;
+
+    const sem = computeSemesterData(classId);
+
+    const featuredBox = document.getElementById(featuredBoxId);
+    const featuredText = sem.featured.length
+      ? sem.featured.map(x => `${x.name} (${x.qualifyPoints})`).join(" & ")
+      : "—";
+    featuredBox.innerText = featuredText;
+
+    const levelOrder = ["Tốt","Khá","Đạt (trung bình)","Chưa đạt (Yếu)"];
+    const tbodyClass = document.getElementById(classLevelTableId);
+    tbodyClass.innerHTML = levelOrder.map(lv => {
+      const names = sem.groups[lv] || [];
+      const namesCell = (lv === "Tốt") ? "-" : (names.length ? names.join(", ") : "-");
+      return `
+        <tr>
+          <td><b>${lv}</b></td>
+          <td class="num">${names.length}</td>
+          <td>${escapeHtml(namesCell)}</td>
+        </tr>
+      `;
+    }).join("");
+
+    const tbodyStudent = document.getElementById(studentLevelTableId);
+    if (sem.results.length === 0){
+      tbodyStudent.innerHTML = `<tr><td colspan="6">Chưa có dữ liệu.</td></tr>`;
+      return;
+    }
+
+    tbodyStudent.innerHTML = sem.results.map(r => {
+      const noteHtml = escapeHtml(r.weekNotesText).replaceAll("\n","<br/>");
+      const selectHtml = readOnly
+        ? `<span>Bị hạ ${r.downgrade} bậc rèn luyện</span>`
+        : `
+          <div class="row" style="margin:0;gap:8px;">
+            <select class="mini" onchange="setStudentDowngrade('${classId}','${r.studentId}', this.value)">
+              ${[0,1,2,3].map(v => `<option value="${v}" ${Number(r.downgrade)===v?'selected':''}>${v}</option>`).join("")}
+            </select>
+            <span>Bị hạ ${r.downgrade} bậc rèn luyện</span>
+          </div>
+        `;
+
+      return `
+        <tr>
+          <td><b>${escapeHtml(r.name)}</b></td>
+          <td class="num">
+            <div><b>${r.score}</b> / 120</div>
+            <div class="muted">100 + (${r.totalWeekPoints}) = ${100 + r.totalWeekPoints}; Điểm rèn luyện sau giới hạn 0–120: ${r.score}</div>
+          </td>
+          <td>${selectHtml}</td>
+          <td class="num">${r.totalAbs}</td>
+          <td><b>${escapeHtml(r.finalLevel)}</b></td>
+          <td>${noteHtml || "-"}</td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  function setStudentDowngrade(classId, studentId, value){
+    const downAll = getDowngrades();
+    if (!downAll[classId]) downAll[classId] = {};
+    downAll[classId][studentId] = clampInt(Number(value), 0, 3);
+    setDowngrades(downAll);
+    renderSemesterSummaryAdmin();
+  }
+
+  /* ✅ SỬA: Vi phạm theo HK join bằng '; ' */
+  function renderSemesterViolationsTable(classId, tbodyId){
+    const cls = getClasses().find(c => c.id === classId);
+    const tbody = document.getElementById(tbodyId);
+    if (!cls || !tbody) return;
+
+    const typeMap = new Map(getBehaviorTypes().map(t => [t.id, t]));
+    const classData = (getPoints()[cls.id] || {});
+
+    const formatAgg = (agg) => {
+      if (agg.size === 0) return "-";
+      return Array.from(agg.entries()).map(([typeId, cnt]) => {
+        const t = typeMap.get(typeId);
+        return `${t ? t.name : "(Đã xóa loại)"} (${cnt} lần)`;
+      }).join("; ");
+    };
+
+    const rows = cls.students.map(s => {
+      const vioAgg = new Map(), posAgg = new Map();
+      let totalAbs = 0;
+      const absByWeek = [], notesLines = [];
+
+      for (let w = cls.startWeek; w <= cls.endWeek; w++){
+        const rec = (classData[w] || {})[s.id];
+        if (!rec) continue;
+
+        for (const it of (rec.violations || []))
+          vioAgg.set(it.typeId, (vioAgg.get(it.typeId) || 0) + safeInt(it.count, 1));
+
+        for (const it of (rec.positives || []))
+          posAgg.set(it.typeId, (posAgg.get(it.typeId) || 0) + safeInt(it.count, 1));
+
+        const ac = (rec.absences || []).length;
+        if (ac){ totalAbs += ac; absByWeek.push({week:w,count:ac}); }
+        if ((rec.notes || "").trim()) notesLines.push(`Tuần ${w}: ${rec.notes.trim()}.`);
+      }
+
+      return {
+        name:s.name,
+        vioText:formatAgg(vioAgg),
+        posText:formatAgg(posAgg),
+        absText:totalAbs ? `${totalAbs} buổi: ${absByWeek.map(x=>`Tuần ${x.week} (${x.count} buổi)`).join(", ")}` : "0 buổi",
+        notesText:notesLines.join("\n")
+      };
+    });
+
+    tbody.innerHTML = rows.length
+      ? rows.map(r => `<tr>
+          <td><b>${escapeHtml(r.name)}</b></td>
+          <td>${escapeHtml(r.vioText)}</td>
+          <td>${escapeHtml(r.posText)}</td>
+          <td class="num">${escapeHtml(r.absText)}</td>
+          <td>${escapeHtml(r.notesText).replaceAll("\n","<br/>") || "-"}</td>
+        </tr>`).join("")
+      : `<tr><td colspan="5">Chưa có dữ liệu.</td></tr>`;
+  }
+
+  function formatAbsenceSummary(absList){
+    if(!absList || absList.length===0) return "0";
+    let p=0,k=0; const details=[];
+    for(const raw of absList){
+      const value=String(raw||'');
+      const m=value.match(/^(.*?)\s*-\s*(Có phép|Không phép)$/);
+      if(m){ const session=m[1].trim(); const code=m[2]==='Có phép'?'P':'K'; if(code==='P')p++;else k++; details.push(`${session} (${code})`); }
+      else { k++; details.push(`${value} (K)`); }
+    }
+    const counts=[]; if(p)counts.push(`${p}P`); if(k)counts.push(`${k}K`);
+    return `${absList.length} buổi (${counts.join('/')}) : ${details.join('; ')}`;
+  }
+
+  function computeWeeklyRows(classId, week){
+    const cls=getClasses().find(c=>c.id===classId); if(!cls)return [];
+    const typeMap=new Map(getBehaviorTypes().map(t=>[t.id,t]));
+    const weekData=(((getPoints()[cls.id]||{})[week]||{}));
+    return cls.students.map(s=>{
+      const rec=weekData[s.id]||{violations:[],positives:[],absences:[],notes:""};
+      const absList=rec.absences||[];
+      return {studentId:s.id,name:s.name,vioText:formatItemsAggSemicolon(rec.violations||[],typeMap),posText:formatItemsAggSemicolon(rec.positives||[],typeMap),total:calcTotalPoints(rec,typeMap),absCount:absList.length,absText:formatAbsenceSummary(absList),notes:(rec.notes||'').trim(),hasViolation:(rec.violations||[]).length>0};
+    });
+  }
+
+  function computeWeeklyFeaturedNames(rows){
+    const candidates = rows.filter(r => !r.hasViolation && r.absCount === 0);
+    if (candidates.length === 0) return [];
+    const max = Math.max(...candidates.map(c => c.total));
+    return candidates.filter(c => c.total === max).map(c => c.name);
+  }
+
+  function computeWeeklyFeaturedIds(rows){
+    const candidates = rows.filter(r => !r.hasViolation && r.absCount === 0);
+    if (candidates.length === 0) return [];
+    const max = Math.max(...candidates.map(c => c.total));
+    return candidates.filter(c => c.total === max).map(c => c.studentId);
+  }
+
+  /* ✅ SỬA: Vi phạm/Tích cực ngăn cách bằng '; ' */
+  function formatItemsAggSemicolon(items, typeMap){
+    if (!items || items.length === 0) return "";
+    const order = [];
+    const m = new Map();
+    for (const it of items){
+      const typeId = it.typeId;
+      if (!m.has(typeId)){
+        m.set(typeId, { count: 0, details: [] });
+        order.push(typeId);
+      }
+      const obj = m.get(typeId);
+      obj.count += safeInt(it.count, 1);
+      const d = (it.detail || "").trim();
+      if (d) obj.details.push(d);
+    }
+
+    return order.map(typeId => {
+      const t = typeMap.get(typeId);
+      const name = t ? t.name : "(Đã xóa loại)";
+      const obj = m.get(typeId);
+      const uniqDetails = Array.from(new Set(obj.details));
+      const detailText = uniqDetails.length ? uniqDetails.join("; ") : "";
+      return detailText
+        ? `${name} (${obj.count} lần: ${detailText})`
+        : `${name} (${obj.count} lần)`;
+    }).join("; "); // ✅ ở đây
+  }
+
+  function calcTotalPoints(rec, typeMap){
+    let sum = 0;
+    for (const it of (rec.violations || [])){
+      const t = typeMap.get(it.typeId);
+      const p = t ? Number(t.points) : 0;
+      sum += p * safeInt(it.count, 1);
+    }
+    for (const it of (rec.positives || [])){
+      const t = typeMap.get(it.typeId);
+      const p = t ? Number(t.points) : 0;
+      sum += p * safeInt(it.count, 1);
+    }
+    return sum;
+  }
+
+  function computeSemesterData(classId){
+    const cls = getClasses().find(c => c.id === classId);
+    if (!cls) return { results: [], featured: [], groups: {} };
+
+    const types = getBehaviorTypes();
+    const typeMap = new Map(types.map(t => [t.id, t]));
+    const data = getPoints();
+    const classData = data[cls.id] || {};
+
+    const downAll = getDowngrades();
+    if (!downAll[cls.id]) downAll[cls.id] = {};
+    const downMap = downAll[cls.id];
+
+    const results = cls.students.map(s => {
+      let totalWeekPoints = 0;
+      let totalAbs = 0;
+      const weekNotes = [];
+      let qualifyPoints = 0;
+
+      for (let w = cls.startWeek; w <= cls.endWeek; w++){
+        const weekData = classData[w] || {};
+        const rec = weekData[s.id];
+        if (!rec) continue;
+
+        const absCount = (rec.absences || []).length;
+        const hasVio = (rec.violations || []).length > 0;
+
+        const weekPts = calcTotalPoints(rec, typeMap);
+        totalWeekPoints += weekPts;
+        totalAbs += absCount;
+
+        if (!hasVio && absCount === 0){
+          qualifyPoints += weekPts;
+        }
+
+        if ((rec.notes || "").trim()){
+          weekNotes.push(`Tuần ${w}: ${rec.notes.trim()}.`);
+        }
+      }
+
+      const rawScore = 100 + totalWeekPoints;
+      const score = clamp(rawScore, 0, 120);
+
+      const downgrade = clampInt(downMap[s.id] ?? 0, 0, 3);
+      const baseLevel = baseRankFromScore(score);
+      const finalLevel = applyDowngrade(baseLevel, downgrade);
+
+      return {
+        studentId: s.id,
+        name: s.name,
+        totalWeekPoints,
+        score,
+        downgrade,
+        totalAbs,
+        finalLevel,
+        weekNotesText: weekNotes.join("\n"),
+        qualifyPoints
+      };
+    });
+
+    // Giữ nguyên thứ tự học sinh theo danh sách lớp đã tạo.
+    // Không sắp xếp theo điểm; các bảng sẽ hiển thị đúng thứ tự cls.students.
+
+    const maxQ = results.length ? Math.max(...results.map(r => r.qualifyPoints)) : 0;
+    const featured = results.filter(r => r.qualifyPoints === maxQ).map(r => ({
+      studentId: r.studentId, name: r.name, qualifyPoints: r.qualifyPoints
+    }));
+
+    const groups = { "Tốt":[], "Khá":[], "Đạt":[], "Chưa đạt":[] };
+    for (const r of results){
+      if (!groups[r.finalLevel]) groups[r.finalLevel] = [];
+      groups[r.finalLevel].push(r.name);
+    }
+
+    setDowngrades(downAll);
+    return { cls, results, featured, groups, maxQ };
+  }
+
+  // Xếp loại theo ĐIỂM RÈN LUYỆN:
+  // 0-49: Chưa đạt (Yếu)
+  // 50-69: Đạt (Trung bình)
+  // 70-84: Khá
+  // 85-120: Tốt
+  // 85 được tính là Tốt để không có khoảng điểm bị bỏ trống.
+  function baseRankFromScore(score){
+    const n = Number(score);
+    if (n >= 85) return "Tốt";
+    if (n >= 70) return "Khá";
+    if (n >= 50) return "Đạt";
+    return "Chưa đạt";
+  }
+
+  // Xếp loại tương ứng với HẠ BẬC RÈN LUYỆN:
+  // 0 bậc = Tốt; 1 bậc = Khá; 2 bậc = Đạt (Trung bình); 3 bậc = Chưa đạt (Yếu).
+  function downgradeRank(step){
+    const order = ["Tốt", "Khá", "Đạt", "Chưa đạt"];
+    return order[clampInt(Number(step), 0, 3)];
+  }
+
+  // Xếp loại cuối cùng lấy MỨC THẤP HƠN giữa xếp loại theo điểm và xếp loại theo hạ bậc.
+  // Ví dụ: 100 điểm = Tốt, hạ 2 bậc = Đạt => kết quả Đạt.
+  // Ví dụ: 80 điểm = Khá, không hạ = Tốt => kết quả Khá.
+  function applyDowngrade(level, step){
+    const order = ["Tốt", "Khá", "Đạt", "Chưa đạt"];
+    const scoreIdx = order.indexOf(level);
+    const downgradeIdx = order.indexOf(downgradeRank(step));
+    const a = scoreIdx === -1 ? 3 : scoreIdx;
+    const b = downgradeIdx === -1 ? 3 : downgradeIdx;
+    return order[Math.max(a, b)];
+  }
+
+  const classTrackCtx = { classId: "" };
+
+  function openClassTrackingGate(){
+    initClassTrackingGate();
+    goTo("classTrackingGate");
+  }
+
+  function initClassTrackingGate(){
+    const sel = document.getElementById("ctGateClassSelect");
+    const err = document.getElementById("ctGateError");
+
+    const classes = getClasses();
+    sel.innerHTML = classes.length
+      ? classes.map(c => `<option value="${c.id}">${escapeHtml(c.code)}</option>`).join("")
+      : `<option value="">(Chưa có lớp)</option>`;
+
+    err.innerText = "";
+    ctGateUpdateInfo();
+  }
+
+  function ctGateUpdateInfo(){
+    const sel = document.getElementById("ctGateClassSelect");
+    const info = document.getElementById("ctGateInfo");
+    const classes = getClasses();
+    const cls = classes.find(c => c.id === sel.value);
+
+    if (!cls){
+      info.innerText = "Bạn cần tạo Lớp học trước ở Quản lí Website.";
+      return;
+    }
+    info.innerText = `Lớp: ${cls.code} • ${cls.semester} • Tuần ${cls.startWeek} → ${cls.endWeek}`;
+  }
+
+  function submitClassTrackingGate(){
+    const sel = document.getElementById("ctGateClassSelect");
+    const err = document.getElementById("ctGateError");
+
+    const cls = getClasses().find(c => c.id === sel.value);
+    if (!cls) { err.innerText = "Chưa chọn được lớp hợp lệ."; return; }
+err.innerText = "";
+    classTrackCtx.classId = cls.id;
+    initClassTrackingDashboard();
+    goTo("classTracking");
+  }
+
+  function initClassTrackingDashboard(){
+    const cls = getClasses().find(c => c.id === classTrackCtx.classId);
+    if (!cls) return;
+
+    document.getElementById("ctClassLabel").innerText = cls.code;
+    document.getElementById("ctSemLabel").innerText = cls.semester;
+    document.getElementById("ctRangeLabel").innerText = `Tuần ${cls.startWeek} → ${cls.endWeek}`;
+  }
+
+  function goToClassTrack(pageId){
+    const cls = getClasses().find(c => c.id === classTrackCtx.classId);
+    if (!cls){ alert("Chưa chọn lớp để theo dõi."); openClassTrackingGate(); return; }
+
+    if (pageId === "classWeeklyView") initClassWeeklyView();
+    if (pageId === "classSemesterView") initClassSemesterView();
+    if (pageId === "classSemesterViolationsView") initClassSemesterViolationsView();
+    if (pageId === "classTracking") initClassTrackingDashboard();
+
+    goTo(pageId);
+  }
+
+  function initClassWeeklyView(){
+    const cls = getClasses().find(c => c.id === classTrackCtx.classId);
+    if (!cls) return;
+
+    document.getElementById("ctWClassLabel").innerText = cls.code;
+    document.getElementById("ctWSemLabel").innerText = cls.semester;
+    document.getElementById("ctWRangeLabel").innerText = `Tuần ${cls.startWeek} → ${cls.endWeek}`;
+
+    const sel = document.getElementById("ctWeekSelect");
+    sel.innerHTML = "";
+    for (let w = cls.startWeek; w <= cls.endWeek; w++){
+      const opt = document.createElement("option");
+      opt.value = String(w);
+      opt.textContent = `Tuần ${w}`;
+      sel.appendChild(opt);
+    }
+    renderClassWeeklyView();
+  }
+
+  function renderClassWeeklyView(){
+    const cls = getClasses().find(c => c.id === classTrackCtx.classId);
+    if (!cls) return;
+
+    const week = Number(document.getElementById("ctWeekSelect").value);
+    document.getElementById("ctWeeklyTitle").innerText = `Bảng Tổng Kết Rèn Luyện của Tuần ${week}`;
+
+    const rows = computeWeeklyRows(cls.id, week);
+    const updated = isWeekUpdated(cls.id, week);
+    const featured = updated ? computeWeeklyFeaturedNames(rows) : [];
+
+    document.getElementById("ctWeeklyFeaturedBox").innerText =
+      updated
+        ? (featured.length ? featured.join(" & ") : "Không có học sinh tiêu biểu trong tuần này.")
+        : "Chưa cập nhật học sinh tiêu biểu của Tuần.";
+
+    const tbody = document.getElementById("ctWeeklyTableBody");
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td><b>${escapeHtml(r.name)}</b></td>
+        <td>${escapeHtml(r.vioText || "-")}</td>
+        <td>${escapeHtml(r.posText || "-")}</td>
+        <td class="num"><b>${r.total}</b></td>
+        <td class="num">${escapeHtml(r.absText)}</td>
+        <td>${escapeHtml(r.notes || "-")}</td>
+      </tr>
+    `).join("");
+  }
+
+  function initClassSemesterView(){
+    const cls = getClasses().find(c => c.id === classTrackCtx.classId);
+    if (!cls) return;
+
+    document.getElementById("ctSClassLabel").innerText = cls.code;
+    document.getElementById("ctSSemLabel").innerText = cls.semester;
+    document.getElementById("ctSRangeLabel").innerText = `Tuần ${cls.startWeek} → ${cls.endWeek}`;
+
+    renderSemesterSummaryInto(cls.id,'ctSemesterFeaturedBox','ctSemesterClassLevelTable','ctSemesterStudentLevelTable',true);
+  }
+
+  function initClassSemesterViolationsView(){
+    const cls = getClasses().find(c => c.id === classTrackCtx.classId);
+    if (!cls) return;
+
+    document.getElementById("ctVClassLabel").innerText = cls.code;
+    document.getElementById("ctVSemLabel").innerText = cls.semester;
+    document.getElementById("ctVRangeLabel").innerText = `Tuần ${cls.startWeek} → ${cls.endWeek}`;
+
+    renderSemesterViolationsTable(cls.id,'ctSemesterViolationsTable');
+  }
+
+  const studentTrackCtx = { classId:"", studentId:"" };
+
+  function openStudentTrackingGate(){
+    initStudentTrackingGate();
+    goTo("studentTrackingGate");
+  }
+
+  function initStudentTrackingGate(){
+    const clsSel = document.getElementById("stGateClassSelect");
+    const err = document.getElementById("stGateError");
+
+    const classes = getClasses();
+    clsSel.innerHTML = classes.length
+      ? classes.map(c => `<option value="${c.id}">${escapeHtml(c.code)}</option>`).join("")
+      : `<option value="">(Chưa có lớp)</option>`;
+
+    err.innerText = "";
+    stGateOnClassChange();
+  }
+
+  function stGateOnClassChange(){
+    const clsSel = document.getElementById("stGateClassSelect");
+    const stSel = document.getElementById("stGateStudentSelect");
+    const info = document.getElementById("stGateInfo");
+
+    const cls = getClasses().find(c => c.id === clsSel.value);
+    if (!cls){
+      stSel.innerHTML = `<option value="">(Chưa có học sinh)</option>`;
+      info.innerText = "Bạn cần tạo Lớp học + thêm học sinh trước ở Quản lí Website.";
+      return;
+    }
+
+    stSel.innerHTML = cls.students.length
+      ? cls.students.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join("")
+      : `<option value="">(Lớp chưa có học sinh)</option>`;
+
+    info.innerText = `Lớp: ${cls.code} • ${cls.semester} • Tuần ${cls.startWeek} → ${cls.endWeek} • ${cls.students.length} học sinh`;
+  }
+
+  function submitStudentTrackingGate(){
+    const clsSel = document.getElementById("stGateClassSelect");
+    const stSel = document.getElementById("stGateStudentSelect");
+    const err = document.getElementById("stGateError");
+
+    const cls = getClasses().find(c => c.id === clsSel.value);
+    if (!cls) { err.innerText = "Chưa chọn lớp hợp lệ."; return; }
+    if (!stSel.value) { err.innerText = "Chưa chọn học sinh."; return; }
+err.innerText = "";
+    studentTrackCtx.classId = cls.id;
+    studentTrackCtx.studentId = stSel.value;
+
+    initStudentTrackingView();
+    goTo("studentTracking");
+  }
+
+  function initStudentTrackingView(){
+    const cls = getClasses().find(c => c.id === studentTrackCtx.classId);
+    if (!cls) return;
+
+    const student = cls.students.find(s => s.id === studentTrackCtx.studentId);
+    if (!student) return;
+
+    document.getElementById("stClassLabel").innerText = `${cls.code} • ${cls.semester} • Tuần ${cls.startWeek} → ${cls.endWeek}`;
+    document.getElementById("stStudentLabel").innerText = student.name;
+
+    const sem = computeSemesterData(cls.id);
+    const r = sem.results.find(x => x.studentId === student.id);
+
+    const score = r ? r.score : 0;
+    const downgrade = r ? r.downgrade : 0;
+    const level = r ? r.finalLevel : "Chưa đạt (Yếu)";
+    const absTotal = r ? r.totalAbs : 0;
+
+    document.getElementById("stScoreBig").innerText = score;
+    document.getElementById("stDowngrade").innerText = downgrade;
+    document.getElementById("stLevel").innerText = level;
+    document.getElementById("stAbsTotal").innerText = absTotal;
+
+    const featuredWeeks = [];
+    for (let w = cls.startWeek; w <= cls.endWeek; w++){
+      if (!isWeekUpdated(cls.id, w)) continue;
+      const rows = computeWeeklyRows(cls.id, w);
+      const featuredIds = computeWeeklyFeaturedIds(rows);
+      if (featuredIds.includes(student.id)) featuredWeeks.push(w);
+    }
+    document.getElementById("stFeaturedWeeks").innerText =
+      featuredWeeks.length ? featuredWeeks.map(w => `Tuần ${w}`).join(", ") : "Không có";
+
+    const isFeatured = sem.featured.some(x => x.studentId === student.id);
+    const myQ = r ? r.qualifyPoints : 0;
+    document.getElementById("stSemesterFeatured").innerText =
+      isFeatured ? `Có — ${student.name} (${myQ})` : `Không`;
+
+    const tbody = document.getElementById("stWeeklyTableBody");
+    const typeMap = new Map(getBehaviorTypes().map(t => [t.id, t]));
+    const pointsData = getPoints();
+    const classData = pointsData[cls.id] || {};
+
+    const out = [];
+    for (let w = cls.startWeek; w <= cls.endWeek; w++){
+      const weekData = classData[w] || {};
+      const rec = weekData[student.id] || { violations: [], positives: [], absences: [], notes: "" };
+
+      const vio = formatItemsAggSemicolon(rec.violations || [], typeMap) || "-";
+      const pos = formatItemsAggSemicolon(rec.positives || [], typeMap) || "-";
+      const total = calcTotalPoints(rec, typeMap);
+      const absCount = (rec.absences || []).length;
+      const note = (rec.notes || "").trim() || "-";
+
+      out.push(`
+        <tr>
+          <td><b>Tuần ${w}</b></td>
+          <td>${escapeHtml(vio)}</td>
+          <td>${escapeHtml(pos)}</td>
+          <td class="num"><b>${total}</b></td>
+          <td class="num">${absCount}</td>
+          <td>${escapeHtml(note)}</td>
+        </tr>
+      `);
+    }
+    tbody.innerHTML = out.join("");
+  }
+
+  function uid(){
+    return (crypto?.randomUUID && crypto.randomUUID()) || String(Date.now() + Math.random());
+  }
+  function escapeHtml(str){
+    return String(str ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+  function escapeAttr(str){
+    return String(str ?? "").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  }
+  function safeInt(n, def=1){
+    const x = Number(n);
+    if (!Number.isFinite(x) || x <= 0) return def;
+    return Math.floor(x);
+  }
+  function clamp(n, min, max){
+    const x = Number(n);
+    if (!Number.isFinite(x)) return min;
+    return Math.max(min, Math.min(max, x));
+  }
+  function clampInt(n, min, max){
+    return Math.max(min, Math.min(max, Math.floor(Number(n) || 0)));
+  }
+
+
+  document.addEventListener("keydown", (e)=>{
+    if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="s"){
+      e.preventDefault();
+      const page=document.querySelector(".page.active")?.id;
+      if(page==="weeklyPractice") saveWeeklyEntry();
+      else if(page==="weeklyAbsence") saveAbsenceWeek();
+    }
+  });
+
+
+  function openExcelExport(){
+    const cls=getClasses()[0];
+    const box=document.getElementById("excelExportBox");
+    if(!box)return;
+    if(!cls){
+      box.innerHTML='<div class="note">Chưa có lớp để tải dữ liệu.</div>';
+      box.style.display="block";
+      return;
+    }
+
+    let html='<b>Chọn các tuần muốn tải:</b><div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;">';
+    for(let w=cls.startWeek;w<=cls.endWeek;w++){
+      html+=`<label class="frame" style="padding:7px 10px;cursor:pointer;">
+        <input type="checkbox" class="excel-week" value="${w}"> Tuần ${w}
+      </label>`;
+    }
+    html+='</div><div class="row" style="margin-top:10px;">';
+    html+='<button class="btn success" onclick="exportSelectedWeeksExcel()">Tải file Ketquarenluyen.xlsx</button>';
+    html+='<button class="btn secondary" onclick="closeExcelExport()">Đóng</button></div>';
+    box.innerHTML=html;
+    box.style.display="block";
+  }
+
+  function closeExcelExport(){
+    const box=document.getElementById("excelExportBox");
+    if(box)box.style.display="none";
+  }
+
+  function excelSafe(v){
+    return v==null ? "" : String(v).replace(/<br\s*\/?>/gi,"\n");
+  }
+
+  function excelHeader(ws, row, col, value){
+    ws.cell = ws.cell || {};
+  }
+
+  function styleExcelSheet(ws){
+    if(!ws || !ws["!ref"])return;
+    const range=XLSX.utils.decode_range(ws["!ref"]);
+    for(let R=0;R<=range.e.r;R++){
+      for(let C=0;C<=range.e.c;C++){
+        const addr=XLSX.utils.encode_cell({r:R,c:C});
+        if(!ws[addr])continue;
+        ws[addr].s={
+          font:{name:"Times New Roman",sz:12},
+          alignment:{vertical:"center",wrap_text:true}
+        };
+      }
+    }
+  }
+
+
+  function excelAbsenceSummaryForSemester(cls, studentId){
+    const data=getPoints()[cls.id]||{};
+    let p=0,k=0,total=0;
+    const details=[];
+    for(let w=cls.startWeek;w<=cls.endWeek;w++){
+      const rec=(data[w]||{})[studentId];
+      if(!rec)continue;
+      for(const raw of (rec.absences||[])){
+        total++;
+        const m=String(raw).match(/^(.*?)\s*-\s*(Có phép|Không phép)$/);
+        const session=m?m[1].trim():String(raw);
+        const code=m && m[2]==="Có phép" ? "P" : "K";
+        if(code==="P")p++; else k++;
+        details.push(`${session} (${code})`);
+      }
+    }
+    if(!total)return "";
+    const pk=[p?`${p}P`:"",k?`${k}K`:""].filter(Boolean).join("/");
+    return `${total} buổi (${pk}) : ${details.join("; ")}`;
+  }
+
+  function getWeeklyExportRows(cls, week){
+    const rows=computeWeeklyRows(cls.id, week);
+    return rows.map((r,i)=>[
+      i+1, r.name, excelSafe(r.vioText||"-"), excelSafe(r.posText||"-"),
+      r.total, excelSafe(r.absText||"0"), excelSafe(r.notes||"-")
+    ]);
+  }
+
+  function getWeeklyFeaturedExport(cls, week){
+    const rows = computeWeeklyRows(cls.id, week);
+    const names = Array.isArray(rows) ? computeWeeklyFeaturedNames(rows) : [];
+    return names.length ? names.join(" & ") : "Không có";
+  }
+
+  function aggregateSemesterExport(cls){
+    const typeMap=new Map(getBehaviorTypes().map(t=>[t.id,t]));
+    const data=getPoints()[cls.id]||{};
+    return cls.students.map((s,i)=>{
+      let total=0, vio=new Map(), pos=new Map(), abs=0, pAbs=0, kAbs=0, notes=[];
+      for(let w=cls.startWeek;w<=cls.endWeek;w++){
+        const rec=(data[w]||{})[s.id];
+        if(!rec)continue;
+        total+=calcTotalPoints(rec,typeMap);
+        for(const it of (rec.violations||[]))vio.set(it.typeId,(vio.get(it.typeId)||0)+safeInt(it.count,1));
+        for(const it of (rec.positives||[]))pos.set(it.typeId,(pos.get(it.typeId)||0)+safeInt(it.count,1));
+        for(const raw of (rec.absences||[])){
+          abs++;
+          if(String(raw).endsWith(" - Có phép"))pAbs++;else kAbs++;
+        }
+        if((rec.notes||"").trim())notes.push(`Tuần ${w}: ${rec.notes.trim()}`);
+      }
+      const fmt=m=>m.size?Array.from(m.entries()).map(([id,c])=>`${typeMap.get(id)?.name||"(Đã xóa loại)"} (${c} lần)`).join("; "):"-";
+      const pk=abs?`(${[pAbs?`${pAbs}P`:"",kAbs?`${kAbs}K`:""].filter(Boolean).join("/")})`:"";
+      return {
+        index:i+1,name:s.name,total,vioText:fmt(vio),posText:fmt(pos),
+        absCount:abs,absPK:pk,notes:notes.join("\n")||"-"
+      };
+    });
+  }
+
+  function getSemesterExportData(cls){
+    const sem = computeSemesterData(cls.id);
+    return sem.results.map((r,i)=>[
+      i+1,
+      r.name,
+      r.score,
+      r.downgrade,
+      r.totalAbs ? formatAbsenceSummaryForSemester(cls.id,r.studentId) : "",
+      r.finalLevel,
+      r.weekNotesText || "-"
+    ]);
+  }
+
+  function formatAbsenceSummaryForSemester(classId, studentId){
+    const cls=getClasses().find(c=>c.id===classId);
+    if(!cls)return "";
+    const data=getPoints()[classId]||{};
+    let p=0,k=0,total=0;
+    const details=[];
+    for(let w=cls.startWeek;w<=cls.endWeek;w++){
+      const rec=(data[w]||{})[studentId];
+      if(!rec)continue;
+      for(const raw of (rec.absences||[])){
+        total++;
+        const m=String(raw).match(/^(.*?)\s*-\s*(Có phép|Không phép)$/);
+        const session=m?m[1].trim():String(raw);
+        const code=m && m[2]==="Có phép" ? "P" : "K";
+        if(code==="P")p++; else k++;
+        details.push(`${session} (${code})`);
+      }
+    }
+    if(!total)return "";
+    const pk=[p?`${p}P`:"",k?`${k}K`:""].filter(Boolean).join("/");
+    return `${total} buổi (${pk}) : ${details.join("; ")}`;
+  }
+
+
+  function excelBorderStyle(){
+    return {
+      top:{style:"thin",color:{rgb:"B7B7B7"}},
+      bottom:{style:"thin",color:{rgb:"B7B7B7"}},
+      left:{style:"thin",color:{rgb:"B7B7B7"}},
+      right:{style:"thin",color:{rgb:"B7B7B7"}}
+    };
+  }
+
+  function styleExcelSheet(ws, opts={}){
+    if(!ws || !ws["!ref"])return;
+    const range=XLSX.utils.decode_range(ws["!ref"]);
+    const titleRow=opts.titleRow ?? 0;
+    const headerRows=opts.headerRows ?? [4];
+
+    for(let R=0;R<=range.e.r;R++){
+      for(let C=0;C<=range.e.c;C++){
+        const addr=XLSX.utils.encode_cell({r:R,c:C});
+        if(!ws[addr])continue;
+        let fill=null;
+        if(R===titleRow) fill={patternType:"solid",fgColor:{rgb:"1F4E78"}};
+        else if(headerRows.includes(R)) fill={patternType:"solid",fgColor:{rgb:"D9EAF7"}};
+
+        ws[addr].s={
+          font:{name:"Times New Roman",sz:12,bold:(R===titleRow || headerRows.includes(R))},
+          alignment:{vertical:"center",horizontal:C===0?"center":"left",wrap_text:true},
+          border:excelBorderStyle(),
+          ...(fill?{fill}:{}),
+        };
+      }
+    }
+  }
+
+  function makeStyledSheet(title, subtitle, headers, rows, colWidths){
+    // Row 1 = title, row 2 = subtitle, rows 3-4 reserved, row 5 = table header.
+    const data=[[title],[subtitle],[],[],headers,...rows];
+    const ws=XLSX.utils.aoa_to_sheet(data);
+    ws["!merges"]=[{s:{r:0,c:0},e:{r:0,c:Math.max(0,headers.length-1)}},
+                    {s:{r:1,c:0},e:{r:1,c:Math.max(0,headers.length-1)}}];
+    ws["!cols"]=headers.map((_,i)=>({wch:colWidths?.[i]||18}));
+    ws["!rows"]=[{hpt:24},{hpt:20},{hpt:8},{hpt:8},{hpt:28}];
+    ws["!freeze"]={xSplit:0,ySplit:5};
+    styleExcelSheet(ws,{titleRow:0,headerRows:[4]});
+    return ws;
+  }
+
+  function addWeeklyFeaturedSection(ws, cls, week, headersLen){
+    const range = XLSX.utils.decode_range(ws["!ref"]);
+    const labelRow = range.e.r + 2;
+    const valueRow = labelRow + 1;
+
+    const titleCell = XLSX.utils.encode_cell({r:labelRow,c:0});
+    const valueCell = XLSX.utils.encode_cell({r:valueRow,c:0});
+
+    ws[titleCell] = {
+      t:"s",
+      v:"Tổng kết Học Sinh Tiêu Biểu của Tuần"
+    };
+
+    ws[valueCell] = {
+      t:"s",
+      v:getWeeklyFeaturedExport(cls,week)
+    };
+
+    ws["!merges"] = ws["!merges"] || [];
+    ws["!merges"].push(
+      {s:{r:labelRow,c:0},e:{r:labelRow,c:Math.max(0,headersLen-1)}},
+      {s:{r:valueRow,c:0},e:{r:valueRow,c:Math.max(0,headersLen-1)}}
+    );
+
+    for(const r of [labelRow,valueRow]){
+      for(let c=0;c<headersLen;c++){
+        const a=XLSX.utils.encode_cell({r,c});
+        if(!ws[a]) ws[a]={t:"s",v:""};
+        ws[a].s={
+          font:{name:"Times New Roman",sz:12,bold:r===labelRow},
+          alignment:{vertical:"center",wrap_text:true},
+          border:excelBorderStyle(),
+          ...(r===labelRow?{fill:{patternType:"solid",fgColor:{rgb:"E2F0D9"}}}: {})
+        };
+      }
+    }
+
+    // Quan trọng: cập nhật !ref để XLSX ghi 2 dòng vừa thêm.
+    range.e.r = valueRow;
+    range.e.c = Math.max(range.e.c, headersLen-1);
+    ws["!ref"] = XLSX.utils.encode_range(range);
+
+    ws["!rows"] = ws["!rows"] || [];
+    ws["!rows"][labelRow] = {hpt:24};
+    ws["!rows"][valueRow] = {hpt:24};
+
+    return ws;
+  }
+
+  function addSemesterHonorSection(ws, cls, headersLen){
+    const sem = computeSemesterData(cls.id);
+    const range = XLSX.utils.decode_range(ws["!ref"]);
+
+    const titleRow = range.e.r + 2;
+    const valueRow = titleRow + 1;
+    const summaryRow = titleRow + 3;
+    const summaryHeader = titleRow + 4;
+
+    ws["!merges"] = ws["!merges"] || [];
+
+    // 1. Vinh danh học sinh tiêu biểu của Lớp học
+    ws[XLSX.utils.encode_cell({r:titleRow,c:0})] = {
+      t:"s",
+      v:"Vinh danh học sinh tiêu biểu của Lớp học"
+    };
+
+    ws[XLSX.utils.encode_cell({r:valueRow,c:0})] = {
+      t:"s",
+      v:sem.featured && sem.featured.length
+        ? sem.featured.map(x=>`${x.name} (${x.qualifyPoints})`).join(" & ")
+        : "—"
+    };
+
+    // 2. Tiêu đề bảng tổng kết xếp loại chung
+    ws[XLSX.utils.encode_cell({r:summaryRow,c:0})] = {
+      t:"s",
+      v:"Bảng Tổng kết xếp loại rèn luyện chung của Lớp học"
+    };
+
+    // 3. Header bảng
+    const headers = [
+      "Xếp loại rèn luyện",
+      "Số lượng",
+      "Họ và tên (không liệt kê loại Tốt)"
+    ];
+
+    headers.forEach((v,c)=>{
+      ws[XLSX.utils.encode_cell({r:summaryHeader,c})] = {
+        t:"s",
+        v
+      };
+    });
+
+    // 4. Dữ liệu xếp loại
+    let rr = summaryHeader + 1;
+
+    ["Tốt","Khá","Đạt (trung bình)","Chưa đạt (Yếu)"].forEach(level=>{
+      const names = sem.groups && Array.isArray(sem.groups[level])
+        ? sem.groups[level]
+        : [];
+
+      ws[XLSX.utils.encode_cell({r:rr,c:0})] = {
+        t:"s",
+        v:level
+      };
+
+      ws[XLSX.utils.encode_cell({r:rr,c:1})] = {
+        t:"n",
+        v:names.length
+      };
+
+      ws[XLSX.utils.encode_cell({r:rr,c:2})] = {
+        t:"s",
+        v:level === "Tốt" ? "-" : (names.length ? names.join(", ") : "-")
+      };
+
+      rr++;
+    });
+
+    // 5. Merge tiêu đề
+    ws["!merges"].push(
+      {s:{r:titleRow,c:0},e:{r:titleRow,c:Math.max(0,headersLen-1)}},
+      {s:{r:valueRow,c:0},e:{r:valueRow,c:Math.max(0,headersLen-1)}},
+      {s:{r:summaryRow,c:0},e:{r:summaryRow,c:Math.max(0,headersLen-1)}}
+    );
+
+    // 6. Style
+    for(let r=titleRow;r<rr;r++){
+      for(let c=0;c<Math.max(headersLen,3);c++){
+        const a=XLSX.utils.encode_cell({r,c});
+        if(!ws[a]) ws[a]={t:"s",v:""};
+
+        ws[a].s={
+          font:{
+            name:"Times New Roman",
+            sz:12,
+            bold:(r===titleRow || r===summaryRow || r===summaryHeader)
+          },
+          alignment:{vertical:"center",wrap_text:true},
+          border:excelBorderStyle(),
+          ...((r===titleRow || r===summaryRow)
+            ? {fill:{patternType:"solid",fgColor:{rgb:"E2F0D9"}}}
+            : {}),
+          ...(r===summaryHeader
+            ? {fill:{patternType:"solid",fgColor:{rgb:"D9EAF7"}}}
+            : {})
+        };
+      }
+    }
+
+    // 7. Quan trọng: mở rộng !ref để toàn bộ bảng mới được xuất ra Excel.
+    range.e.r = rr - 1;
+    range.e.c = Math.max(range.e.c, headersLen-1, 2);
+    ws["!ref"] = XLSX.utils.encode_range(range);
+
+    ws["!rows"] = ws["!rows"] || [];
+    ws["!rows"][titleRow] = {hpt:24};
+    ws["!rows"][valueRow] = {hpt:24};
+    ws["!rows"][summaryRow] = {hpt:24};
+    ws["!rows"][summaryHeader] = {hpt:28};
+
+    return ws;
+  }
+
+  async function loadExcelLibrary(){
+    if(window.XLSX) return true;
+
+    const urls=[
+      "https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js",
+      "https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"
+    ];
+
+    for(const url of urls){
+      try{
+        await new Promise((resolve,reject)=>{
+          const script=document.createElement("script");
+          script.src=url;
+          script.onload=()=>resolve();
+          script.onerror=()=>reject(new Error("load failed"));
+          document.head.appendChild(script);
+        });
+        if(window.XLSX) return true;
+      }catch(e){}
+    }
+    return false;
+  }
+
+
+
+  async function exportSelectedWeeksExcel(){
+    const ready=await loadExcelLibrary();
+    if(!ready){
+      alert("Không tải được thư viện Excel. Hãy kiểm tra kết nối Internet rồi bấm Tải Excel lại.");
+      return;
+    }
+
+    const cls=getClasses()[0];
+    if(!cls){
+      alert("Chưa có lớp để tải dữ liệu.");
+      return;
+    }
+
+    const weeks=[...document.querySelectorAll(".excel-week:checked")].map(x=>Number(x.value));
+    if(!weeks.length){
+      alert("Vui lòng tích chọn ít nhất một tuần.");
+      return;
+    }
+
+    try{
+      const wb=XLSX.utils.book_new();
+
+      weeks.forEach(w=>{
+        const headers=["STT","Họ và tên","Vi phạm","Tích cực","Tổng điểm","Số buổi nghỉ học","Ghi chú"];
+        const ws=makeStyledSheet(
+          `Kết quả rèn luyện của cả lớp - Tuần ${w}`,
+          `${cls.code||""} • Tuần ${w}`,
+          headers,
+          getWeeklyExportRows(cls,w),
+          [7,25,32,32,13,48,35]
+        );
+        addWeeklyFeaturedSection(ws,cls,w,headers.length);
+        XLSX.utils.book_append_sheet(wb,ws,`Tuần ${w}`.slice(0,31));
+      });
+
+      const sem=computeSemesterData(cls.id);
+
+      const hvHeaders=["STT","Họ và tên","Vi phạm","Tích cực","Số buổi nghỉ học","Ghi chú"];
+      const hvRows=aggregateSemesterExport(cls).map(r=>[
+        r.index,r.name,r.vioText,r.posText,
+        r.absCount?`${r.absCount} buổi ${r.absPK}`:"",
+        r.notes
+      ]);
+      const hv=makeStyledSheet(
+        "Vi phạm và tích cực theo học kì",
+        `${cls.code||""} • Học kì ${cls.semester||""}`,
+        hvHeaders,hvRows,[7,25,38,38,28,35]
+      );
+      XLSX.utils.book_append_sheet(wb,hv,"Vi phạm và tích cực theo học kì");
+
+      // Bám đúng bảng "Tổng kết rèn luyện của học sinh Lớp học" trên website.
+      const trHeaders=[
+        "STT","Họ và tên","Điểm rèn luyện",
+        "Số bậc rèn luyện bị hạ","Số buổi nghỉ học",
+        "Xếp loại rèn luyện","Ghi chú"
+      ];
+      const trRows=sem.results.map((r,i)=>[
+        i+1,r.name,r.score,r.downgrade,
+        r.totalAbs ? formatAbsenceSummaryForSemester(cls.id,r.studentId) : "",
+        r.finalLevel,r.weekNotesText||"-"
+      ]);
+      const tr=makeStyledSheet(
+        "Tổng kết rèn luyện",
+        `${cls.code||""} • Tổng kết rèn luyện học kì`,
+        trHeaders,trRows,[7,25,16,28,48,24,38]
+      );
+      addSemesterHonorSection(tr,cls,trHeaders.length);
+      XLSX.utils.book_append_sheet(wb,tr,"Tổng kết rèn luyện");
+
+      // Xác định vùng sử dụng sau khi thêm các phần vinh danh/tổng kết.
+      styleExcelSheet(tr,{titleRow:0,headerRows:[4]});
+
+      XLSX.writeFile(wb,"Ketquarenluyen.xlsx");
+      closeExcelExport();
+    }catch(err){
+      console.error(err);
+      alert("Không thể tạo file Excel: "+(err.message||err));
+    }
+  }
+
+
+  function computeSemesterRows(classId){
+    const cls=getClasses().find(c=>c.id===classId);
+    if(!cls)return [];
+    const points=getPoints()[classId]||{};
+    const typeMap=new Map(getBehaviorTypes().map(t=>[t.id,t]));
+    return cls.students.map(s=>{
+      let total=0,abs=0,v=[],p=[],notes=[];
+      for(let w=cls.startWeek;w<=cls.endWeek;w++){
+        const rec=(points[w]||{})[s.id];
+        if(!rec)continue;
+        total+=calcTotalPoints(rec,typeMap);
+        abs+=(rec.absences||[]).length;
+        v.push(...(rec.violations||[])); p.push(...(rec.positives||[]));
+        if((rec.notes||"").trim())notes.push(`Tuần ${w}: ${rec.notes.trim()}`);
+      }
+      return {name:s.name,total,absCount:abs,vioText:formatItemsAggSemicolon(v,typeMap),posText:formatItemsAggSemicolon(p,typeMap),absText:abs?String(abs):"",notes:notes.join("\n")};
+    });
+  }
+
+  /* init */
+  renderBehaviorTypes();
+  renderClasses();
+  renderPointsManage();
+</script>
+</body>
+</html>
