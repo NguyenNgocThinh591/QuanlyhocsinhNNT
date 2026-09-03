@@ -173,9 +173,13 @@
     <h1>Quản lí Website</h1>
     <div class="content">
       <div class="frame">
-        <h3>Tải kết quả rèn luyện ra Excel</h3>
-        <button class="btn" onclick="openExcelExport()">Tải Excel</button>
+        <h3>Tải kết quả rèn luyện</h3>
+        <div class="row" style="gap:8px;flex-wrap:wrap;">
+          <button class="btn" onclick="openExcelExport()">Tải Excel</button>
+          <button class="btn" onclick="openDocumentExport()">Tải Word</button>
+        </div>
         <div id="excelExportBox" style="display:none;margin-top:12px;"></div>
+        <div id="documentExportBox" style="display:none;margin-top:12px;"></div>
       </div>
     </div>
 
@@ -839,8 +843,10 @@ Lê Văn C"></textarea>
 
       <div class="row">
         <button class="btn" onclick="submitStudentTrackingGate()">Vào trang theo dõi</button>
+        <button class="btn success" onclick="openStudentWordExport()">Tải file Word</button>
       </div>
 
+      <div id="studentWordExportBox" style="display:none;margin-top:14px;"></div>
       <div id="stGateInfo" class="note"></div>
       <div id="stGateError" class="error"></div>
     </div>
@@ -991,8 +997,7 @@ Lê Văn C"></textarea>
     let points = Number(document.getElementById("btPoints").value);
     if (!name) return alert("Vui lòng nhập tên loại.");
     if (!Number.isFinite(points) || points === 0) return alert("Điểm phải là số và khác 0.");
-    if (type === "vi_pham") points = -Math.abs(points);
-    if (type === "tich_cuc") points = Math.abs(points);
+    points = type === "vi_pham" ? -Math.abs(points) : Math.abs(points);
     const arr = getBehaviorTypes();
     arr.push({ id: uid(), type, name, points });
     setBehaviorTypes(arr);
@@ -1002,22 +1007,60 @@ Lê Văn C"></textarea>
     renderBehaviorTypeSelects();
   }
 
-  function deleteBehaviorType(id){
-    if (!confirm("Xóa loại này?")) return;
-    setBehaviorTypes(getBehaviorTypes().filter(x => x.id !== id));
+  function saveBehaviorTypeRow(id){
+    const row = document.querySelector(`#btTable tr[data-id="${CSS.escape(String(id))}"]`);
+    if (!row) return;
+    const arr = getBehaviorTypes();
+    const item = arr.find(x => String(x.id) === String(id));
+    if (!item) return;
+
+    const name = (row.querySelector(".bt-edit-name")?.value || "").trim();
+    const type = row.querySelector(".bt-edit-type")?.value === "tich_cuc" ? "tich_cuc" : "vi_pham";
+    let points = Number(row.querySelector(".bt-edit-points")?.value);
+    if (!name) return alert("Tên loại không được để trống.");
+    if (!Number.isFinite(points) || points === 0) return alert("Điểm phải là số và khác 0.");
+
+    item.name = name;
+    item.type = type;
+    item.points = type === "vi_pham" ? -Math.abs(points) : Math.abs(points);
+    setBehaviorTypes(arr);
     renderBehaviorTypes();
     renderBehaviorTypeSelects();
   }
 
-  /* ✅ SỬA: đổi thứ tự toàn danh sách (Vi phạm ↔ Tích cực đổi chỗ được) */
+  function saveAllBehaviorTypes(){
+    const arr = getBehaviorTypes();
+    const rows = document.querySelectorAll("#btTable tr[data-id]");
+    for (const row of rows){
+      const item = arr.find(x => String(x.id) === String(row.dataset.id));
+      if (!item) continue;
+      const name = (row.querySelector(".bt-edit-name")?.value || "").trim();
+      let points = Number(row.querySelector(".bt-edit-points")?.value);
+      if (!name) return alert("Có dòng đang để trống tên loại.");
+      if (!Number.isFinite(points) || points === 0) return alert("Điểm phải là số và khác 0.");
+      item.name = name;
+      item.type = row.querySelector(".bt-edit-type")?.value === "tich_cuc" ? "tich_cuc" : "vi_pham";
+      item.points = item.type === "vi_pham" ? -Math.abs(points) : Math.abs(points);
+    }
+    setBehaviorTypes(arr);
+    renderBehaviorTypes();
+    renderBehaviorTypeSelects();
+    alert("Đã lưu tất cả loại vi phạm và tích cực.");
+  }
+
+  function deleteBehaviorType(id){
+    if (!confirm("Xóa loại này?")) return;
+    setBehaviorTypes(getBehaviorTypes().filter(x => String(x.id) !== String(id)));
+    renderBehaviorTypes();
+    renderBehaviorTypeSelects();
+  }
+
   function moveBehaviorType(id, dir){
     const arr = getBehaviorTypes();
-    const idx = arr.findIndex(x => x.id === id);
+    const idx = arr.findIndex(x => String(x.id) === String(id));
     if (idx < 0) return;
-
-    const j = idx + dir; // swap với phần tử liền kề
+    const j = idx + dir;
     if (j < 0 || j >= arr.length) return;
-
     [arr[idx], arr[j]] = [arr[j], arr[idx]];
     setBehaviorTypes(arr);
     renderBehaviorTypes();
@@ -1027,25 +1070,33 @@ Lê Văn C"></textarea>
   function renderBehaviorTypes(){
     const tbody = document.getElementById("btTable");
     if (!tbody) return;
-
     const arr = getBehaviorTypes();
-    if (arr.length === 0){
+    if (!arr.length){
       tbody.innerHTML = `<tr><td colspan="5">Chưa có loại vi phạm/tích cực nào.</td></tr>`;
       return;
     }
-
     tbody.innerHTML = arr.map((x, i) => `
-      <tr>
-        <td>${x.type === "vi_pham" ? "Vi phạm" : "Tích cực"}</td>
-        <td>${escapeHtml(x.name)}</td>
-        <td class="num"><b>${x.points > 0 ? "+"+x.points : x.points}</b></td>
-        <td class="num">
-          <button class="iconBtn" ${i > 0 ? "" : "disabled"} title="Lên"
-            onclick="moveBehaviorType('${x.id}', -1)">↑</button>
-          <button class="iconBtn" ${i < arr.length - 1 ? "" : "disabled"} title="Xuống"
-            onclick="moveBehaviorType('${x.id}', 1)">↓</button>
+      <tr data-id="${escapeHtml(x.id)}">
+        <td>
+          <select class="bt-edit-type">
+            <option value="vi_pham" ${x.type === "vi_pham" ? "selected" : ""}>Vi phạm</option>
+            <option value="tich_cuc" ${x.type === "tich_cuc" ? "selected" : ""}>Tích cực</option>
+          </select>
         </td>
-        <td><button class="xbtn" title="Xóa" onclick="deleteBehaviorType('${x.id}')">X</button></td>
+        <td>
+          <input class="bt-edit-name" type="text" value="${escapeHtml(x.name)}" placeholder="Nhập nội dung...">
+        </td>
+        <td class="num">
+          <input class="bt-edit-points" type="number" step="1" value="${Number(x.points) || 0}" style="width:90px;">
+        </td>
+        <td class="num">
+          <button class="iconBtn" ${i>0?'':'disabled'} onclick="moveBehaviorType('${escapeHtml(x.id)}',-1)">↑</button>
+          <button class="iconBtn" ${i<arr.length-1?'':'disabled'} onclick="moveBehaviorType('${escapeHtml(x.id)}',1)">↓</button>
+        </td>
+        <td>
+          <button class="btn" type="button" onclick="saveBehaviorTypeRow('${escapeHtml(x.id)}')">💾 Lưu</button>
+          <button class="xbtn" type="button" onclick="deleteBehaviorType('${escapeHtml(x.id)}')">X</button>
+        </td>
       </tr>
     `).join("");
   }
@@ -2030,6 +2081,8 @@ Lê Văn C"></textarea>
   }
 
   function computeWeeklyFeaturedNames(rows){
+        rows=Array.isArray(rows)?rows:[];
+rows = Array.isArray(rows) ? rows : [];
     const candidates = rows.filter(r => !r.hasViolation && r.absCount === 0);
     if (candidates.length === 0) return [];
     const max = Math.max(...candidates.map(c => c.total));
@@ -2037,6 +2090,8 @@ Lê Văn C"></textarea>
   }
 
   function computeWeeklyFeaturedIds(rows){
+        rows=Array.isArray(rows)?rows:[];
+rows = Array.isArray(rows) ? rows : [];
     const candidates = rows.filter(r => !r.hasViolation && r.absCount === 0);
     if (candidates.length === 0) return [];
     const max = Math.max(...candidates.map(c => c.total));
@@ -2355,6 +2410,69 @@ err.innerText = "";
     info.innerText = `Lớp: ${cls.code} • ${cls.semester} • Tuần ${cls.startWeek} → ${cls.endWeek} • ${cls.students.length} học sinh`;
   }
 
+  function openStudentWordExport(){
+    const box=document.getElementById("studentWordExportBox");
+    if(!box)return;
+    const classes=getClasses();
+    if(!classes.length){
+      box.innerHTML='<div class="frame"><div class="note">Chưa có lớp để tải dữ liệu.</div></div>';
+      box.style.display='block';
+      return;
+    }
+
+    const gateClass=document.getElementById("stGateClassSelect")?.value;
+    const selectedId=classes.some(c=>String(c.id)===String(gateClass)) ? gateClass : classes[0].id;
+    let h='<div class="frame">';
+    h+='<h3 style="margin-top:0;">Tải kết quả theo từng học sinh</h3>';
+    h+='<div class="row" style="gap:10px;align-items:center;flex-wrap:wrap;">';
+    h+='<label><b>Chọn lớp:</b></label>';
+    h+='<select id="studentWordClassSelect" onchange="refreshStudentWordStudentChoices()" style="min-width:220px;padding:8px;border:1px solid #cfd6df;border-radius:7px;">';
+    classes.forEach(c=>h+=`<option value="${escapeHtml(c.id)}" ${String(c.id)===String(selectedId)?'selected':''}>${escapeHtml(c.code||c.name||'Lớp')}</option>`);
+    h+='</select></div>';
+    h+='<div id="studentWordStudentChoices" style="margin-top:12px;"></div>';
+    h+='<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap;">';
+    h+='<button class="btn success" onclick="downloadStudentTrackingWord()">Tải file Word</button>';
+    h+='<button class="btn secondary" onclick="document.getElementById(\'studentWordExportBox\').style.display=\'none\'">Đóng</button>';
+    h+='</div></div>';
+    box.innerHTML=h;
+    box.style.display='block';
+    refreshStudentWordStudentChoices();
+  }
+
+  function refreshStudentWordStudentChoices(){
+    const box=document.getElementById("studentWordStudentChoices");
+    const select=document.getElementById("studentWordClassSelect");
+    if(!box||!select)return;
+    const cls=getClasses().find(c=>String(c.id)===String(select.value));
+    if(!cls){
+      box.innerHTML='<div class="note">Không tìm thấy lớp đã chọn.</div>';
+      return;
+    }
+    if(!cls.students.length){
+      box.innerHTML='<div class="note">Lớp chưa có học sinh.</div>';
+      return;
+    }
+
+    let h='<b>Chọn học sinh muốn tải:</b>';
+    h+='<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">';
+    h+='<button type="button" class="btn secondary" onclick="setAllStudentWordChecks(true)">Chọn tất cả học sinh</button>';
+    h+='<button type="button" class="btn secondary" onclick="setAllStudentWordChecks(false)">Bỏ chọn tất cả</button>';
+    h+='</div>';
+    h+='<div style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;">';
+    cls.students.forEach((s,i)=>{
+      h+=`<label class="frame" style="padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:7px;">`+
+         `<input type="checkbox" class="student-word-student" value="${escapeHtml(s.id)}" style="min-width:auto;"> `+
+         `<span>${i+1}. ${escapeHtml(s.name)}</span></label>`;
+    });
+    h+='</div>';
+    h+=`<div class="note" style="margin-top:8px;">Danh sách xuất Word giữ nguyên thứ tự học sinh của lớp ${escapeHtml(cls.code||'')}.</div>`;
+    box.innerHTML=h;
+  }
+
+  function setAllStudentWordChecks(checked){
+    document.querySelectorAll('.student-word-student').forEach(x=>x.checked=!!checked);
+  }
+
   function submitStudentTrackingGate(){
     const clsSel = document.getElementById("stGateClassSelect");
     const stSel = document.getElementById("stGateStudentSelect");
@@ -2479,26 +2597,59 @@ err.innerText = "";
 
 
   function openExcelExport(){
-    const cls=getClasses()[0];
+    const classes=getClasses();
     const box=document.getElementById("excelExportBox");
     if(!box)return;
-    if(!cls){
+
+    if(!classes.length){
       box.innerHTML='<div class="note">Chưa có lớp để tải dữ liệu.</div>';
       box.style.display="block";
       return;
     }
 
-    let html='<b>Chọn các tuần muốn tải:</b><div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;">';
+    const selectedId=classes[0].id;
+    const cls=classes.find(c=>c.id===selectedId)||classes[0];
+
+    let html='<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;">';
+    html+='<label><b>Chọn lớp:</b></label>';
+    html+='<select id="excelClassSelect" onchange="refreshExcelWeekChoices()" style="min-width:220px;padding:8px;border:1px solid #cfd6df;border-radius:7px;">';
+    classes.forEach(c=>{
+      html+=`<option value="${escapeHtml(c.id)}" ${c.id===selectedId?'selected':''}>${escapeHtml(c.code||c.name||'Lớp')}</option>`;
+    });
+    html+='</select></div>';
+    html+='<div id="excelWeekChoices" style="margin-top:12px;"></div>';
+    html+='<div class="row" style="margin-top:10px;">';
+    html+='<button class="btn success" onclick="exportSelectedWeeksExcel()">Tải file Ketquarenluyen.xlsx</button>';
+    html+='<button class="btn secondary" onclick="closeExcelExport()">Đóng</button></div>';
+    box.innerHTML=html;
+    box.style.display="block";
+    refreshExcelWeekChoices();
+  }
+
+  function refreshExcelWeekChoices(){
+    const box=document.getElementById("excelWeekChoices");
+    const select=document.getElementById("excelClassSelect");
+    if(!box||!select)return;
+
+    const cls=getClasses().find(c=>String(c.id)===String(select.value));
+    if(!cls){
+      box.innerHTML='<div class="note">Không tìm thấy lớp đã chọn.</div>';
+      return;
+    }
+
+    let html='<b>Chọn các tuần muốn tải:</b>';
+    html+='<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;">';
     for(let w=cls.startWeek;w<=cls.endWeek;w++){
       html+=`<label class="frame" style="padding:7px 10px;cursor:pointer;">
         <input type="checkbox" class="excel-week" value="${w}"> Tuần ${w}
       </label>`;
     }
-    html+='</div><div class="row" style="margin-top:10px;">';
-    html+='<button class="btn success" onclick="exportSelectedWeeksExcel()">Tải file Ketquarenluyen.xlsx</button>';
-    html+='<button class="btn secondary" onclick="closeExcelExport()">Đóng</button></div>';
+    html+='</div>';
+    html+='<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">';
+    html+='<button type="button" class="btn secondary" onclick="document.querySelectorAll(\'.excel-week\').forEach(x=>x.checked=true)">Chọn tất cả tuần</button>';
+    html+='<button type="button" class="btn secondary" onclick="document.querySelectorAll(\'.excel-week\').forEach(x=>x.checked=false)">Bỏ chọn tất cả</button>';
+    html+='</div>';
     box.innerHTML=html;
-    box.style.display="block";
   }
 
   function closeExcelExport(){
@@ -2560,7 +2711,12 @@ err.innerText = "";
   }
 
   function getWeeklyFeaturedExport(cls, week){
-    const names=computeWeeklyFeaturedNames(cls.id, week);
+    // computeWeeklyFeaturedNames(rows) expects an ARRAY of weekly rows.
+    // Passing (cls.id, week) made "rows.filter is not a function".
+    const weeklyRows = computeWeeklyRows(cls.id, week);
+    const names = computeWeeklyFeaturedNames(
+      Array.isArray(weeklyRows) ? weeklyRows : []
+    );
     return names && names.length ? names.join(" & ") : "Không có";
   }
 
@@ -2637,28 +2793,26 @@ err.innerText = "";
   }
 
   function styleExcelSheet(ws, opts={}){
-    if(!ws || !ws["!ref"])return;
+    if(!ws || !ws["!ref"]) return;
     const range=XLSX.utils.decode_range(ws["!ref"]);
     const titleRow=opts.titleRow ?? 0;
     const headerRows=opts.headerRows ?? [4];
-
-    for(let R=0;R<=range.e.r;R++){
-      for(let C=0;C<=range.e.c;C++){
+    for(let R=range.s.r; R<=range.e.r; R++){
+      for(let C=range.s.c; C<=range.e.c; C++){
         const addr=XLSX.utils.encode_cell({r:R,c:C});
-        if(!ws[addr])continue;
-        let fill=null;
-        if(R===titleRow) fill={patternType:"solid",fgColor:{rgb:"1F4E78"}};
-        else if(headerRows.includes(R)) fill={patternType:"solid",fgColor:{rgb:"D9EAF7"}};
-
+        if(!ws[addr]) ws[addr]={t:"s",v:""};
+        const isTitle=R===titleRow, isHeader=headerRows.includes(R);
         ws[addr].s={
-          font:{name:"Times New Roman",sz:12,bold:(R===titleRow || headerRows.includes(R))},
-          alignment:{vertical:"center",horizontal:C===0?"center":"left",wrap_text:true},
+          ...(ws[addr].s||{}),
+          font:{name:"Times New Roman",sz:isTitle?13:12,bold:isTitle||isHeader,color:isTitle?{rgb:"FFFFFF"}:undefined},
+          alignment:{vertical:"center",horizontal:(isTitle||isHeader)?"center":"left",wrap_text:true},
           border:excelBorderStyle(),
-          ...(fill?{fill}:{}),
+          ...(isTitle?{fill:{patternType:"solid",fgColor:{rgb:"1F4E78"}}}:isHeader?{fill:{patternType:"solid",fgColor:{rgb:"D9EAF7"}}}: {})
         };
       }
     }
   }
+
 
   function makeStyledSheet(title, subtitle, headers, rows, colWidths){
     // Row 1 = title, row 2 = subtitle, rows 3-4 reserved, row 5 = table header.
@@ -2669,6 +2823,15 @@ err.innerText = "";
     ws["!cols"]=headers.map((_,i)=>({wch:colWidths?.[i]||18}));
     ws["!rows"]=[{hpt:24},{hpt:20},{hpt:8},{hpt:8},{hpt:28}];
     ws["!freeze"]={xSplit:0,ySplit:5};
+    // Cho phép nội dung dài tự xuống dòng; chiều rộng cột được khống chế để bảng không quá rộng.
+    // Đặt chiều cao tối thiểu cho các dòng dữ liệu; Excel vẫn có thể tự điều chỉnh khi mở file.
+    const totalRows = data.length;
+    ws["!rows"] = Array.from({length: totalRows}, (_, r) => {
+      if (r === 0) return {hpt:24};
+      if (r === 1) return {hpt:20};
+      if (r === 4) return {hpt:30};
+      return {hpt:36};
+    });
     styleExcelSheet(ws,{titleRow:0,headerRows:[4]});
     return ws;
   }
@@ -2698,6 +2861,10 @@ err.innerText = "";
         };
       }
     }
+    const _r = XLSX.utils.decode_range(ws["!ref"] || "A1:A1");
+    _r.e.r = Math.max(_r.e.r, valueRow);
+    _r.e.c = Math.max(_r.e.c, headersLen - 1);
+    ws["!ref"] = XLSX.utils.encode_range(_r);
     return ws;
   }
 
@@ -2746,6 +2913,10 @@ err.innerText = "";
         };
       }
     }
+    const _r = XLSX.utils.decode_range(ws["!ref"] || "A1:A1");
+    _r.e.r = Math.max(_r.e.r, rr - 1);
+    _r.e.c = Math.max(_r.e.c, Math.max(headersLen,3) - 1);
+    ws["!ref"] = XLSX.utils.encode_range(_r);
     return ws;
   }
 
@@ -2781,9 +2952,11 @@ err.innerText = "";
       return;
     }
 
-    const cls=getClasses()[0];
+    const classSelect=document.getElementById("excelClassSelect");
+    const selectedClassId=classSelect ? classSelect.value : "";
+    const cls=getClasses().find(c=>String(c.id)===String(selectedClassId));
     if(!cls){
-      alert("Chưa có lớp để tải dữ liệu.");
+      alert("Vui lòng chọn lớp cần tải dữ liệu.");
       return;
     }
 
@@ -2803,7 +2976,7 @@ err.innerText = "";
           `${cls.code||""} • Tuần ${w}`,
           headers,
           getWeeklyExportRows(cls,w),
-          [7,25,32,32,13,48,35]
+          [7,24,28,28,13,30,28]
         );
         addWeeklyFeaturedSection(ws,cls,w,headers.length);
         XLSX.utils.book_append_sheet(wb,ws,`Tuần ${w}`.slice(0,31));
@@ -2820,7 +2993,7 @@ err.innerText = "";
       const hv=makeStyledSheet(
         "Vi phạm và tích cực theo học kì",
         `${cls.code||""} • Học kì ${cls.semester||""}`,
-        hvHeaders,hvRows,[7,25,38,38,28,35]
+        hvHeaders,hvRows,[7,24,32,32,24,28]
       );
       XLSX.utils.book_append_sheet(wb,hv,"Vi phạm và tích cực theo học kì");
 
@@ -2838,7 +3011,7 @@ err.innerText = "";
       const tr=makeStyledSheet(
         "Tổng kết rèn luyện",
         `${cls.code||""} • Tổng kết rèn luyện học kì`,
-        trHeaders,trRows,[7,25,16,28,48,24,38]
+        trHeaders,trRows,[7,24,15,25,30,20,28]
       );
       addSemesterHonorSection(tr,cls,trHeaders.length);
       XLSX.utils.book_append_sheet(wb,tr,"Tổng kết rèn luyện");
@@ -2854,6 +3027,399 @@ err.innerText = "";
     }
   }
 
+
+
+  /* ============================================================
+     WORD / PDF: gộp nội dung theo thứ tự
+     1) Tuần
+     2) Tổng kết rèn luyện
+     3) Vi phạm và tích cực theo học kì
+     ============================================================ */
+
+  function documentEscape(v){
+    return String(v==null?"":v)
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#39;");
+  }
+
+  function documentRowsTable(headers, rows){
+    let h='<table class="report-table"><thead><tr>';
+    headers.forEach(x=>h+='<th>'+documentEscape(x)+'</th>');
+    h+='</tr></thead><tbody>';
+    (rows||[]).forEach(row=>{
+      h+='<tr>';
+      headers.forEach((_,i)=>{
+        const v=row && row[i]!=null ? row[i] : '';
+        h+='<td>'+documentEscape(v).replace(/\n/g,'<br>')+'</td>';
+      });
+      h+='</tr>';
+    });
+    h+='</tbody></table>';
+    return h;
+  }
+
+  function buildDocumentReport(cls,weeks){
+    let html='';
+    html+='<div class="report-cover">';
+    html+='<h1>HỆ THỐNG ĐIỂM RÈN LUYỆN</h1>';
+    html+='<p><b>Lớp:</b> '+documentEscape(cls.code||cls.name||'')+'</p>';
+    html+='<p><b>Học kì:</b> '+documentEscape(cls.semester||'')+'</p>';
+    html+='</div>';
+
+    // 1. TUẦN
+    html+='<h2>1. TUẦN</h2>';
+    weeks.forEach(w=>{
+      html+='<div class="report-section">';
+      html+='<h3>Kết quả rèn luyện của cả lớp - Tuần '+w+'</h3>';
+      const headers=['STT','Họ và tên','Vi phạm','Tích cực','Tổng điểm','Số buổi nghỉ học','Ghi chú'];
+      html+=documentRowsTable(headers,getWeeklyExportRows(cls,w));
+      html+='<h4>Tổng kết Học Sinh Tiêu Biểu của Tuần</h4>';
+      html+='<p class="report-highlight">'+documentEscape(getWeeklyFeaturedExport(cls,w))+'</p>';
+      html+='</div>';
+    });
+
+    // 2. TỔNG KẾT RÈN LUYỆN
+    html+='<div class="page-break"></div>';
+    html+='<h2>2. TỔNG KẾT RÈN LUYỆN</h2>';
+    const sem=computeSemesterData(cls.id);
+    const trHeaders=['STT','Họ và tên','Điểm rèn luyện','Số bậc rèn luyện bị hạ','Số buổi nghỉ học','Xếp loại rèn luyện','Ghi chú'];
+    const trRows=sem.results.map((r,i)=>[
+      i+1,r.name,r.score,r.downgrade,
+      r.totalAbs?formatAbsenceSummaryForSemester(cls.id,r.studentId):'',
+      r.finalLevel,r.weekNotesText||'-'
+    ]);
+    html+=documentRowsTable(trHeaders,trRows);
+    html+='<h3>Vinh danh học sinh tiêu biểu của Lớp học</h3>';
+    html+='<p class="report-highlight">'+documentEscape(sem.featured.length?sem.featured.map(x=>x.name+' ('+x.qualifyPoints+')').join(' & '):'—')+'</p>';
+    html+='<h3>Bảng Tổng kết xếp loại rèn luyện chung của Lớp học</h3>';
+    const levelRows=['Tốt','Khá','Đạt','Chưa đạt'].map(level=>{
+      const names=sem.groups[level]||[];
+      return [level,names.length,names.length?names.join(', '):'-'];
+    });
+    html+=documentRowsTable(['Xếp loại rèn luyện','Số lượng','Họ và tên'],levelRows);
+
+    // 3. VI PHẠM VÀ TÍCH CỰC THEO HỌC KÌ
+    html+='<div class="page-break"></div>';
+    html+='<h2>3. VI PHẠM VÀ TÍCH CỰC THEO HỌC KÌ</h2>';
+    const hvHeaders=['STT','Họ và tên','Vi phạm','Tích cực','Số buổi nghỉ học','Ghi chú'];
+    const hvRows=aggregateSemesterExport(cls).map(r=>[
+      r.index,r.name,r.vioText,r.posText,
+      r.absCount?`${r.absCount} buổi ${r.absPK}`:'',r.notes
+    ]);
+    html+=documentRowsTable(hvHeaders,hvRows);
+    return html;
+  }
+
+  function getDocumentExportSelection(){
+    const select=document.getElementById('excelClassSelect');
+    const selectedId=select ? select.value : '';
+    const cls=getClasses().find(c=>String(c.id)===String(selectedId));
+    if(!cls) throw new Error('Vui lòng chọn lớp cần tải dữ liệu.');
+    const weeks=[...document.querySelectorAll('.excel-week:checked')].map(x=>Number(x.value));
+    if(!weeks.length) throw new Error('Vui lòng tích chọn ít nhất một tuần.');
+    return {cls,weeks};
+  }
+
+  function openDocumentExport(){
+    const classes=getClasses();
+    const box=document.getElementById('documentExportBox');
+    if(!box)return;
+    if(!classes.length){
+      box.innerHTML='<div class="note">Chưa có lớp để tải dữ liệu.</div>';
+      box.style.display='block';
+      return;
+    }
+
+    const selectedId=classes[0].id;
+    let h='<div class="frame">';
+    h+='<div class="row" style="gap:10px;align-items:center;flex-wrap:wrap;">';
+    h+='<label><b>Chọn lớp:</b></label>';
+    h+='<select id="documentClassSelect" onchange="refreshDocumentWeekChoices()" style="min-width:220px;padding:8px;border:1px solid #cfd6df;border-radius:7px;">';
+    classes.forEach(c=>h+=`<option value="${escapeHtml(c.id)}" ${c.id===selectedId?'selected':''}>${escapeHtml(c.code||c.name||'Lớp')}</option>`);
+    h+='</select></div>';
+    h+='<div id="documentWeekChoices" style="margin-top:12px;"></div>';
+    h+='<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap;">';
+    h+='<button class="btn success" onclick="downloadCombinedWord()">Tải file Word</button>';
+    h+='';
+    h+='<button class="btn secondary" onclick="document.getElementById(\'documentExportBox\').style.display=\'none\'">Đóng</button>';
+    h+='</div></div>';
+    box.innerHTML=h;
+    box.style.display='block';
+    refreshDocumentWeekChoices();
+  }
+
+  function refreshDocumentWeekChoices(){
+    const box=document.getElementById('documentWeekChoices');
+    const select=document.getElementById('documentClassSelect');
+    if(!box||!select)return;
+    const cls=getClasses().find(c=>String(c.id)===String(select.value));
+    if(!cls){box.innerHTML='<div class="note">Không tìm thấy lớp đã chọn.</div>';return;}
+    let h='<b>Chọn các tuần muốn đưa vào Word:</b>';
+    h+='<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;">';
+    for(let w=cls.startWeek;w<=cls.endWeek;w++){
+      h+=`<label class="frame" style="padding:7px 10px;cursor:pointer;"><input type="checkbox" class="document-week" value="${w}"> Tuần ${w}</label>`;
+    }
+    h+='</div>';
+    h+='<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">';
+    h+='<button type="button" class="btn secondary" onclick="document.querySelectorAll(\'.document-week\').forEach(x=>x.checked=true)">Chọn tất cả tuần</button>';
+    h+='<button type="button" class="btn secondary" onclick="document.querySelectorAll(\'.document-week\').forEach(x=>x.checked=false)">Bỏ chọn tất cả</button>';
+    h+='</div>';
+    box.innerHTML=h;
+  }
+
+  function combinedReportStyles(){
+    return `
+      /* Thiết lập trang dành riêng cho Microsoft Word */
+      @page Section1{
+        size:595.3pt 841.9pt; /* A4 */
+        margin:28.35pt 28.35pt 28.35pt 28.35pt; /* 1 cm mỗi lề */
+        mso-header-margin:0pt;
+        mso-footer-margin:0pt;
+        mso-paper-source:0;
+      }
+      div.Section1{page:Section1;}
+      html,body{margin:0;padding:0;}
+      body{
+        font-family:"Times New Roman", Times, serif !important;
+        mso-fareast-font-family:"Times New Roman";
+        font-size:12pt !important;
+        line-height:1.15;
+        color:#111;
+      }
+      body *{
+        font-family:"Times New Roman", Times, serif !important;
+        mso-fareast-font-family:"Times New Roman";
+        font-size:12pt !important;
+      }
+      h1,h2,h3,h4,table,th,td,p,div,span{
+        font-family:"Times New Roman", Times, serif !important;
+        mso-fareast-font-family:"Times New Roman";
+        font-size:12pt !important;
+      }
+      h1{text-align:center;margin:0 0 12px;}
+      h2{margin:18px 0 8px;border-bottom:1px solid #555;padding-bottom:4px;}
+      h3,h4{margin:12px 0 6px;}
+      .report-cover{text-align:center;margin-bottom:18px;}
+      .report-table{
+        border-collapse:collapse;
+        width:100%;
+        table-layout:fixed;
+        margin:8px 0 14px;
+      }
+      .report-table th,.report-table td{
+        border:1px solid #777;
+        padding:4px;
+        vertical-align:top;
+        word-wrap:break-word;
+        overflow-wrap:anywhere;
+        white-space:normal;
+        font-family:"Times New Roman", Times, serif;
+        font-size:12pt;
+      }
+      .report-table th{text-align:center;font-weight:700;}
+      .report-highlight{
+        border:1px solid #777;
+        padding:6px;
+        white-space:normal;
+        word-wrap:break-word;
+        font-family:"Times New Roman", Times, serif;
+        font-size:12pt;
+      }
+      .student-word-content{
+        width:100%;
+        page-break-before:auto;
+        page-break-after:auto;
+      }
+      .student-word-content h1,
+      .student-word-content h2,
+      .student-word-content h3,
+      .student-word-content h4,
+      .student-word-content .student-info-box,
+      .student-word-content .student-summary-table,
+      .student-word-content .report-table{
+        page-break-before:auto;
+      }
+      .student-word-page-break{
+        mso-special-character:line-break;
+        page-break-before:always;
+      }
+      .student-info-box{
+        border:1px solid #777;
+        padding:6px 8px;
+        margin:8px 0;
+      }
+      .student-info-box p{margin:3px 0;}
+      .student-summary-table{
+        width:100%;
+        border-collapse:collapse;
+        margin:8px 0;
+        table-layout:fixed;
+      }
+      .student-summary-table td{
+        border:1px solid #777;
+        padding:6px;
+        text-align:left;
+        vertical-align:top;
+      }
+      .page-break{page-break-before:always;break-before:page;}
+      table{page-break-inside:auto;}
+      tr{page-break-inside:avoid;page-break-after:auto;}
+    `;
+  }
+
+  function buildWordHtml(title,body){
+    return `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+  <meta charset="utf-8">
+  <meta name="ProgId" content="Word.Document">
+  <meta name="Generator" content="Microsoft Word compatible HTML">
+  <title>${documentEscape(title)}</title>
+  <!--[if gte mso 9]>
+  <xml>
+    <w:WordDocument>
+      <w:View>Print</w:View>
+      <w:Zoom>100</w:Zoom>
+      <w:DoNotOptimizeForBrowser/>
+    </w:WordDocument>
+  </xml>
+  <![endif]-->
+  <style>${combinedReportStyles()}</style>
+</head>
+<body><div class="Section1">${body}</div></body>
+</html>`;
+  }
+
+  function getStudentTrackingWordSelection(){
+    const select=document.getElementById('studentWordClassSelect');
+    const cls=getClasses().find(c=>String(c.id)===String(select?.value));
+    if(!cls)throw new Error('Vui lòng chọn lớp cần tải dữ liệu.');
+    const selectedIds=new Set([...document.querySelectorAll('.student-word-student:checked')].map(x=>String(x.value)));
+    if(!selectedIds.size)throw new Error('Vui lòng chọn ít nhất một học sinh.');
+    // Lọc theo danh sách gốc của lớp để luôn giữ đúng thứ tự học sinh.
+    const students=cls.students.filter(s=>selectedIds.has(String(s.id)));
+    if(!students.length)throw new Error('Không tìm thấy học sinh đã chọn.');
+    return {cls,students};
+  }
+
+  function buildStudentTrackingWordSection(cls,student){
+    const sem=computeSemesterData(cls.id);
+    const r=sem.results.find(x=>String(x.studentId)===String(student.id));
+    const score=r ? r.score : 0;
+    const downgrade=r ? r.downgrade : 0;
+    const level=r ? r.finalLevel : 'Chưa đạt';
+    const absTotal=r ? r.totalAbs : 0;
+
+    const featuredWeeks=[];
+    for(let w=cls.startWeek;w<=cls.endWeek;w++){
+      if(!isWeekUpdated(cls.id,w))continue;
+      const rows=computeWeeklyRows(cls.id,w);
+      const featuredIds=computeWeeklyFeaturedIds(rows);
+      if(featuredIds.map(String).includes(String(student.id)))featuredWeeks.push(w);
+    }
+    const featuredWeeksText=featuredWeeks.length ? featuredWeeks.map(w=>`Tuần ${w}`).join(', ') : 'Không có';
+    const isFeatured=sem.featured.some(x=>String(x.studentId)===String(student.id));
+    const myQ=r ? r.qualifyPoints : 0;
+    const semesterFeaturedText=isFeatured ? `Có — ${student.name} (${myQ})` : 'Không';
+
+    const typeMap=new Map(getBehaviorTypes().map(t=>[t.id,t]));
+    const classData=getPoints()[cls.id]||{};
+    const weeklyRows=[];
+    for(let w=cls.startWeek;w<=cls.endWeek;w++){
+      const weekData=classData[w]||{};
+      const rec=weekData[student.id]||{violations:[],positives:[],absences:[],notes:''};
+      const vio=formatItemsAggSemicolon(rec.violations||[],typeMap)||'-';
+      const pos=formatItemsAggSemicolon(rec.positives||[],typeMap)||'-';
+      const total=calcTotalPoints(rec,typeMap);
+      const absCount=(rec.absences||[]).length;
+      const note=(rec.notes||'').trim()||'-';
+      weeklyRows.push([`Tuần ${w}`,vio,pos,total,absCount,note]);
+    }
+
+    // Nội dung của MỘT học sinh là một khối liên tục. Không đặt page-break
+    // lên các phần bên trong học sinh; Word tự phân trang tự nhiên nếu nội dung dài.
+    let html='<div class="student-word-content">';
+    html+='<h1>Theo dõi từng học sinh</h1>';
+    html+='<div class="student-info-box">';
+    html+='<p><b>Lớp:</b> '+documentEscape(`${cls.code} • ${cls.semester} • Tuần ${cls.startWeek} → ${cls.endWeek}`)+'</p>';
+    html+='<p><b>Học sinh:</b> '+documentEscape(student.name)+'</p>';
+    html+='</div>';
+
+    html+='<table class="student-summary-table"><tbody><tr>';
+    html+='<td><b>Điểm rèn luyện:</b> '+documentEscape(score)+'</td>';
+    html+='<td><b>Bị hạ:</b> '+documentEscape(downgrade)+' bậc</td>';
+    html+='<td><b>Xếp loại:</b> '+documentEscape(level)+'</td>';
+    html+='<td><b>Số buổi nghỉ:</b> '+documentEscape(absTotal)+'</td>';
+    html+='</tr></tbody></table>';
+
+    html+='<div class="student-info-box">';
+    html+='<p><b>Tuần đạt học sinh tiêu biểu:</b> '+documentEscape(featuredWeeksText)+'</p>';
+    html+='<p><b>Vinh danh học sinh tiêu biểu của Lớp học:</b> '+documentEscape(semesterFeaturedText)+'</p>';
+    html+='</div>';
+
+    html+='<h3>Bảng tổng kết theo Tuần của học sinh</h3>';
+    html+=documentRowsTable(['Tuần','Vi phạm','Tích cực','Tổng điểm','Số buổi nghỉ học','Ghi chú'],weeklyRows);
+    html+='</div>';
+    return html;
+  }
+
+  function buildStudentTrackingWordReport(cls,students){
+    // Chỉ chèn đúng MỘT ngắt trang Word GIỮA hai học sinh.
+    // Ví dụ HS1 chiếm trang 1-2 thì HS2 bắt buộc bắt đầu ở trang 3,
+    // nhưng các phần nội dung của chính HS2 vẫn nối tiếp tự nhiên với nhau.
+    return students.map((student,index)=>{
+      const separator=index>0
+        ? '<br clear="all" class="student-word-page-break" style="mso-special-character:line-break;page-break-before:always;">'
+        : '';
+      return separator + buildStudentTrackingWordSection(cls,student);
+    }).join('');
+  }
+
+  function wordSafeFileName(v){
+    const s=String(v||'').trim().replace(/[\\/:*?"<>|]+/g,'_').replace(/\s+/g,'_');
+    return s||'Ketquarenluyen_hocsinh';
+  }
+
+  function downloadStudentTrackingWord(){
+    try{
+      const {cls,students}=getStudentTrackingWordSelection();
+      const body=buildStudentTrackingWordReport(cls,students);
+      const doc=buildWordHtml('Ket qua ren luyen hoc sinh',body);
+      const blob=new Blob([doc],{type:'application/msword;charset=utf-8'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download=`Ketquarenluyen_hocsinh_${wordSafeFileName(cls.code||cls.name||'Lop')}.doc`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    }catch(e){
+      alert('Không thể tạo file Word: '+(e.message||e));
+    }
+  }
+
+  function downloadCombinedWord(){
+    try{
+      const select=document.getElementById('documentClassSelect');
+      const cls=getClasses().find(c=>String(c.id)===String(select?.value));
+      const weeks=[...document.querySelectorAll('.document-week:checked')].map(x=>Number(x.value));
+      if(!cls)throw new Error('Vui lòng chọn lớp cần tải dữ liệu.');
+      if(!weeks.length)throw new Error('Vui lòng tích chọn ít nhất một tuần.');
+      const body=buildDocumentReport(cls,weeks);
+      const doc=buildWordHtml('Ketquarenluyen',body);
+      const blob=new Blob([doc],{type:'application/msword;charset=utf-8'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download='Ketquarenluyen.doc';
+      document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    }catch(e){alert('Không thể tạo file Word: '+(e.message||e));}
+  }
 
   function computeSemesterRows(classId){
     const cls=getClasses().find(c=>c.id===classId);
