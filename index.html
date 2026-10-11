@@ -140,10 +140,26 @@
     }
     .iconBtn:hover{ background:#f3f4f6; }
     .iconBtn:disabled{ opacity:.45; cursor:not-allowed; }
-    .absence-table-wrap{overflow-x:auto;width:100%;}
+    /* Giữ tiêu đề buổi nghỉ khi cuộn danh sách học sinh. */
+    .absence-table-wrap{
+      overflow:auto;
+      width:100%;
+      max-height:65vh;
+      position:relative;
+      isolation:isolate;
+    }
+    #absenceTable{border-collapse:separate;border-spacing:0;margin-top:0;}
+    #absenceTable thead th{
+      position:sticky;
+      top:0;
+      z-index:3;
+      background:#f3f4f6;
+      box-shadow:0 1px 0 var(--bd);
+    }
     #absenceTable{table-layout:fixed;min-width:980px;}
     #absenceTable th,#absenceTable td{padding:5px 3px;font-size:12px;text-align:center;vertical-align:middle;}
     #absenceTable th:first-child,#absenceTable td:first-child{width:155px;text-align:left;position:sticky;left:0;background:#fff;z-index:2;}
+    #absenceTable thead th:first-child{z-index:4;background:#f3f4f6;}
     #absenceTable th.session-head{width:66px;white-space:normal;line-height:1.15;}
     .absence-choice{display:flex;flex-direction:column;align-items:flex-start;gap:2px;line-height:1.05;}
     .absence-choice label{display:flex;align-items:center;gap:2px;white-space:nowrap;cursor:pointer;}
@@ -418,6 +434,8 @@ Lê Văn C"></textarea>
       <div class="note">
         Với mỗi buổi, tick <b>Nghỉ học có phép</b> hoặc <b>Nghỉ học không phép</b>.
         Có thể bỏ chọn nếu học sinh không nghỉ.
+        Mỗi buổi không phép tự tính 1 lần vi phạm “Nghỉ học không phép”, theo điểm đã khởi tạo.
+        Đổi sang có phép hoặc bỏ nghỉ rồi lưu sẽ tự cập nhật số lần và điểm trừ.
       </div>
       <div class="row">
         <button class="btn success" onclick="saveAbsenceWeek()">Lưu cập nhật</button>
@@ -466,18 +484,6 @@ Lê Văn C"></textarea>
         <select id="weekStudentSelect" style="display:none;"></select>
       </div>
       <div class="hr"></div>
-      <div class="frame">
-        <b>Dữ liệu đã lưu (Tuần <span id="savedWeekLabel">-</span> • <span id="savedStudentLabel">-</span>)</b>
-        <div class="row">
-          <button class="btn danger mini" onclick="deleteSavedWeekly('all')">Xóa toàn bộ đã lưu</button>
-          <button class="btn danger mini" onclick="deleteSavedWeekly('violations')">Xóa Vi phạm</button>
-          <button class="btn danger mini" onclick="deleteSavedWeekly('positives')">Xóa Tích cực</button>
-          <button class="btn danger mini" onclick="deleteSavedWeekly('absences')">Xóa Buổi nghỉ</button>
-          <button class="btn danger mini" onclick="deleteSavedWeekly('notes')">Xóa Ghi chú</button>
-        </div>
-        <div id="savedDataBox" class="note">Chưa có dữ liệu đã lưu.</div>
-      </div>
-      <div class="hr"></div>
       <div class="split">
         <div class="panel">
           <h3>Vi phạm (chọn nhiều)</h3>
@@ -516,6 +522,47 @@ Lê Văn C"></textarea>
         <button class="btn secondary" onclick="resetWeeklyForm()">Xóa form</button>
       </div>
       <div class="note" id="wkHint"></div>
+      <div class="hr"></div>
+      <div class="frame">
+        <b>Dữ liệu đã lưu (Tuần <span id="savedWeekLabel">-</span> • <span id="savedStudentLabel">-</span>)</b>
+        <div class="row">
+          <button class="btn danger mini" onclick="deleteSavedWeekly('all')">Xóa toàn bộ đã lưu</button>
+          <button class="btn danger mini" onclick="deleteSavedWeekly('violations')">Xóa Vi phạm</button>
+          <button class="btn danger mini" onclick="deleteSavedWeekly('positives')">Xóa Tích cực</button>
+          <button class="btn danger mini" onclick="deleteSavedWeekly('absences')">Xóa Buổi nghỉ</button>
+          <button class="btn danger mini" onclick="deleteSavedWeekly('notes')">Xóa Ghi chú</button>
+        </div>
+        <div id="savedDataBox" class="note">Chưa có dữ liệu đã lưu.</div>
+      </div>
+      <div class="hr"></div>
+      <div class="frame">
+        <h3>Nhập vi phạm / tích cực cho nhiều học sinh</h3>
+        <div class="note">Áp dụng cho tuần đang chọn ở trên. Chọn một loại, số lần cho mỗi học sinh, rồi tích những học sinh cần cập nhật.</div>
+        <div class="row">
+          <select id="bulkPracticeKind" onchange="renderBulkPracticeTypes()">
+            <option value="vi_pham">Vi phạm (điểm trừ)</option>
+            <option value="tich_cuc">Tích cực (điểm cộng)</option>
+          </select>
+          <select id="bulkPracticeType" onchange="renderBulkPracticePreview()"></select>
+          <label>Số lần mỗi học sinh:
+            <input id="bulkPracticeCount" type="number" min="1" step="1" value="1"
+              style="min-width:70px;width:80px" oninput="renderBulkPracticePreview()">
+          </label>
+        </div>
+        <textarea id="bulkPracticeDetail" placeholder="Nội dung chung (có thể bỏ trống)"></textarea>
+        <div class="row">
+          <input id="bulkPracticeSearch" placeholder="Tìm học sinh trong danh sách..." oninput="filterBulkPracticeStudents()">
+          <button type="button" class="btn secondary mini" onclick="selectBulkPracticeStudents(true)">Chọn tất cả đang hiển thị</button>
+          <button type="button" class="btn secondary mini" onclick="selectBulkPracticeStudents(false)">Bỏ chọn tất cả</button>
+        </div>
+        <div id="bulkPracticeStudents" class="checkbox-grid" style="max-height:300px;overflow:auto"></div>
+        <div id="bulkPracticePreview" class="note" aria-live="polite"></div>
+        <div class="row">
+          <button type="button" class="btn success" onclick="saveBulkPractice()">Lưu cho học sinh đã chọn</button>
+        </div>
+        <div id="bulkPracticeHint" class="note" aria-live="polite"></div>
+        <div class="note">Nghỉ học không phép được tự cập nhật từ trang Nhập buổi nghỉ theo tuần.</div>
+      </div>
     </div>
     <div class="content">
       <h3 id="weeklySummaryTitle">Bảng Tổng Kết Rèn Luyện</h3>
@@ -942,8 +989,51 @@ Lê Văn C"></textarea>
   function getClasses(){ return JSON.parse(localStorage.getItem(LS.classes)); }
   function setClasses(arr){ localStorage.setItem(LS.classes, JSON.stringify(arr)); }
 
-  function getPoints(){ return JSON.parse(localStorage.getItem(LS.points)); }
-  function setPoints(obj){ localStorage.setItem(LS.points, JSON.stringify(obj)); }
+  function getPoints(){
+    const data = JSON.parse(localStorage.getItem(LS.points));
+    if(syncAllAbsenceViolations(data)) localStorage.setItem(LS.points, JSON.stringify(data));
+    return data;
+  }
+  function setPoints(obj){
+    syncAllAbsenceViolations(obj);
+    localStorage.setItem(LS.points, JSON.stringify(obj));
+  }
+
+  function isUnexcusedAbsenceType(t){
+    return t && t.type === "vi_pham" &&
+      ["nghi hoc khong phep", "nghi khong phep"].includes(normVN(t.name));
+  }
+
+  function getUnexcusedAbsenceType(){
+    return getBehaviorTypes().find(isUnexcusedAbsenceType);
+  }
+
+  function syncAbsenceViolation(rec, type){
+    const before = JSON.stringify(rec.violations || []);
+    const sessions = new Set(buildAbsenceSessions().map(x => x.label));
+    const unexcused = [...new Set(rec.absences || [])].filter(a =>
+      typeof a === "string" && (a.endsWith(" - Không phép") || sessions.has(a)));
+    rec.violations = (rec.violations || []).filter(it => it.source !== "unexcused_absence");
+    if(type && unexcused.length){
+      rec.violations.push({typeId:type.id, count:unexcused.length,
+        detail:unexcused.map(a=>a.replace(/ - Không phép$/, "")).join(", "),
+        source:"unexcused_absence"});
+    }
+    return before !== JSON.stringify(rec.violations);
+  }
+
+  function syncAllAbsenceViolations(data){
+    const type = getUnexcusedAbsenceType();
+    let changed = false;
+    for(const weeks of Object.values(data || {})){
+      for(const students of Object.values(weeks || {})){
+        for(const rec of Object.values(students || {})){
+          if(rec && syncAbsenceViolation(rec, type)) changed = true;
+        }
+      }
+    }
+    return changed;
+  }
 
   function getDowngrades(){ return JSON.parse(localStorage.getItem(LS.downgrades)); }
   function setDowngrades(obj){ localStorage.setItem(LS.downgrades, JSON.stringify(obj)); }
@@ -1457,6 +1547,8 @@ Lê Văn C"></textarea>
     const count = safeInt(document.getElementById("violationCount").value, 1);
     const detail = (document.getElementById("violationDetail").value || "").trim();
     if (!typeId) return alert("Vui lòng chọn loại vi phạm (gõ để tìm rồi bấm chọn).");
+    if(isUnexcusedAbsenceType(getBehaviorTypes().find(t=>t.id===typeId)))
+      return alert('Vui lòng nhập loại này tại “Nhập buổi nghỉ theo tuần” để tự tính theo từng buổi và tránh trừ điểm hai lần.');
     wkTempViolations.push({ typeId, count, detail });
     document.getElementById("violationDetail").value = "";
     document.getElementById("violationTypeSelect").value = "";
@@ -1531,6 +1623,7 @@ Lê Văn C"></textarea>
 
     box.innerHTML = `
       <div><b>Vi phạm:</b> ${escapeHtml(vioText)}</div>
+      ${(rec.violations||[]).some(it=>it.source==="unexcused_absence") ? '<div class="muted">Nghỉ học không phép tự tính theo buổi nghỉ; chỉnh sửa tại trang Nhập buổi nghỉ theo tuần.</div>' : ""}
       <div><b>Tích cực:</b> ${escapeHtml(posText)}</div>
       <div><b>Buổi nghỉ:</b> ${escapeHtml(absText)}</div>
       <div><b>Ghi chú:</b> ${escapeHtml(noteText)}</div>
@@ -1555,7 +1648,7 @@ Lê Văn C"></textarea>
 
     let msg = "";
     if (mode === "all") msg = `Xóa TOÀN BỘ dữ liệu đã lưu của ${stuName} ở Tuần ${week}?`;
-    if (mode === "violations") msg = `Xóa phần VI PHẠM đã lưu của ${stuName} ở Tuần ${week}?`;
+    if (mode === "violations") msg = `Xóa phần VI PHẠM nhập tay của ${stuName} ở Tuần ${week}? Vi phạm nghỉ không phép được giữ theo buổi nghỉ; muốn xóa hãy sửa buổi nghỉ.`;
     if (mode === "positives") msg = `Xóa phần TÍCH CỰC đã lưu của ${stuName} ở Tuần ${week}?`;
     if (mode === "absences") msg = `Xóa phần BUỔI NGHỈ đã lưu của ${stuName} ở Tuần ${week}?`;
     if (mode === "notes") msg = `Xóa phần GHI CHÚ đã lưu của ${stuName} ở Tuần ${week}?`;
@@ -1570,6 +1663,7 @@ Lê Văn C"></textarea>
       if (mode === "violations") rec.violations = [];
       if (mode === "positives") rec.positives = [];
       if (mode === "absences") rec.absences = [];
+      syncAbsenceViolation(rec, getUnexcusedAbsenceType());
       if (mode === "notes") rec.notes = "";
 
       if (!recHasAny(rec)) {
@@ -1595,6 +1689,7 @@ Lê Văn C"></textarea>
   function goWeeklySubPage(id){
     initWeeklySubPages();
     if (id === "weeklyAbsence") renderAbsenceTable();
+    if (id === "weeklyPractice") renderBulkPractice();
     goTo(id);
   }
 
@@ -1616,6 +1711,85 @@ Lê Văn C"></textarea>
       for(let w=cls.startWeek;w<=cls.endWeek;w++) sel.insertAdjacentHTML("beforeend",`<option value="${w}">Tuần ${w}</option>`);
       if([...sel.options].some(o=>o.value===old)) sel.value=old;
     }
+  }
+
+  function renderBulkPractice(){
+    const cls = getClasses().find(c=>c.id===pointsCtx.classId);
+    const box = document.getElementById("bulkPracticeStudents");
+    if(!cls || !box) return;
+    document.getElementById("bulkPracticeSearch").value = "";
+    document.getElementById("bulkPracticeHint").innerText = "";
+    box.innerHTML = cls.students.map(st=>`<label class="cb-item" data-name="${escapeAttr(normVN(st.name))}">
+      <input type="checkbox" value="${escapeAttr(st.id)}" onchange="renderBulkPracticePreview()">
+      <span>${escapeHtml(st.name)}</span></label>`).join("");
+    renderBulkPracticeTypes();
+  }
+
+  function renderBulkPracticeTypes(){
+    const kind = document.getElementById("bulkPracticeKind").value;
+    const sel = document.getElementById("bulkPracticeType");
+    const old = sel.value;
+    const types = getBehaviorTypes().filter(t=>t.type===kind && !isUnexcusedAbsenceType(t));
+    sel.innerHTML = '<option value="">Chọn loại...</option>' + types.map(t=>
+      `<option value="${escapeAttr(t.id)}">${escapeHtml(t.name)} (${Number(t.points)>0?"+":""}${Number(t.points)} điểm/lần)</option>`).join("");
+    if(types.some(t=>t.id===old)) sel.value=old;
+    renderBulkPracticePreview();
+  }
+
+  function filterBulkPracticeStudents(){
+    const q = normVN(document.getElementById("bulkPracticeSearch").value);
+    document.querySelectorAll("#bulkPracticeStudents .cb-item").forEach(row=>{
+      row.style.display = row.dataset.name.includes(q) ? "" : "none";
+    });
+  }
+
+  function selectBulkPracticeStudents(checked){
+    document.querySelectorAll("#bulkPracticeStudents .cb-item").forEach(row=>{
+      if(!checked || row.style.display!=="none") row.querySelector("input").checked=checked;
+    });
+    renderBulkPracticePreview();
+  }
+
+  function renderBulkPracticePreview(){
+    const n = document.querySelectorAll("#bulkPracticeStudents input:checked").length;
+    const type = getBehaviorTypes().find(t=>t.id===document.getElementById("bulkPracticeType").value);
+    const count = Number(document.getElementById("bulkPracticeCount").value);
+    const valid = Number.isSafeInteger(count) && count>0;
+    const points = type && valid ? Number(type.points)*count : null;
+    document.getElementById("bulkPracticePreview").innerText =
+      `Đã chọn ${n} học sinh` + (points!==null ? ` • Mỗi học sinh: ${count} lần, ${points>0?"+":""}${points} điểm.` : ". Chọn loại và nhập số lần nguyên dương.");
+  }
+
+  function saveBulkPractice(){
+    const cls = getClasses().find(c=>c.id===pointsCtx.classId);
+    const week = Number(document.getElementById("weekSelect").value);
+    const kind = document.getElementById("bulkPracticeKind").value;
+    const type = getBehaviorTypes().find(t=>t.id===document.getElementById("bulkPracticeType").value && t.type===kind);
+    const count = Number(document.getElementById("bulkPracticeCount").value);
+    const selected = [...document.querySelectorAll("#bulkPracticeStudents input:checked")].map(x=>x.value);
+    if(!cls || !Number.isInteger(week) || week<cls.startWeek || week>cls.endWeek) return alert("Vui lòng chọn lớp và tuần hợp lệ.");
+    if(!type) return alert("Vui lòng chọn loại vi phạm hoặc tích cực.");
+    if(isUnexcusedAbsenceType(type)) return alert("Nhập nghỉ không phép tại trang Nhập buổi nghỉ theo tuần.");
+    if(!Number.isSafeInteger(count) || count<1) return alert("Số lần phải là số nguyên dương.");
+    const ids = [...new Set(selected)].filter(id=>cls.students.some(st=>st.id===id));
+    if(!ids.length) return alert("Vui lòng chọn ít nhất một học sinh.");
+    const detail = document.getElementById("bulkPracticeDetail").value.trim();
+    const data = getPoints();
+    if(!data[cls.id]) data[cls.id]={};
+    if(!data[cls.id][week]) data[cls.id][week]={};
+    const field = kind==="vi_pham" ? "violations" : "positives";
+    for(const id of ids){
+      const rec = data[cls.id][week][id] || {violations:[],positives:[],absences:[],notes:""};
+      if(!rec[field]) rec[field]=[];
+      rec[field].push({typeId:type.id,count,detail});
+      data[cls.id][week][id]=rec;
+    }
+    setPoints(data);
+    selectBulkPracticeStudents(false);
+    document.getElementById("bulkPracticeDetail").value="";
+    document.getElementById("bulkPracticeHint").innerText=
+      `Đã lưu ${type.name} (${count} lần/học sinh) cho ${ids.length} học sinh ở Tuần ${week}.`;
+    onWeeklySelectionChange();
   }
 
   function absenceInputName(studentId, sessionKey){ return `absence_${studentId}_${sessionKey}`; }
@@ -1657,6 +1831,11 @@ Lê Văn C"></textarea>
     const cls=getClasses().find(c=>c.id===pointsCtx.classId);
     if(!cls)return alert("Không tìm thấy lớp.");
     const week=Number(document.getElementById("absenceWeekSelect").value);
+    if(!Number.isInteger(week) || week < cls.startWeek || week > cls.endWeek)
+      return alert("Vui lòng chọn tuần hợp lệ.");
+    const hasK = [...document.querySelectorAll('#absenceTableBody input[type=radio]:checked')]
+      .some(x=>x.value === "Không phép");
+    if(hasK && !getUnexcusedAbsenceType()) return alert('Hãy khởi tạo loại vi phạm "Nghỉ học không phép" và số điểm trừ trước khi lưu.');
     const data=getPoints();
     if(!data[cls.id])data[cls.id]={};
     if(!data[cls.id][week])data[cls.id][week]={};
@@ -1669,6 +1848,7 @@ Lê Văn C"></textarea>
       });
       const rec=data[cls.id][week][s.id]||{violations:[],positives:[],absences:[],notes:""};
       rec.absences=abs;
+      syncAbsenceViolation(rec, getUnexcusedAbsenceType());
       if(recHasAny(rec)) data[cls.id][week][s.id]=rec;
       else delete data[cls.id][week][s.id];
     });
@@ -1677,7 +1857,8 @@ Lê Văn C"></textarea>
     if(!Object.keys(data[cls.id]).length)delete data[cls.id];
     setPoints(data);
     renderAbsenceTable();
-    alert("Đã lưu cập nhật buổi nghỉ ✅");
+    onWeeklySelectionChange();
+    alert("Đã lưu buổi nghỉ và cập nhật vi phạm nghỉ học không phép ✅");
   }
 
   function initWeeklyPage(){
@@ -1711,6 +1892,7 @@ Lê Văn C"></textarea>
     fillCountSelect("positiveCount");
     renderBehaviorTypeSelects();
     bindWeeklyAutocompletes();
+    renderBulkPractice();
 
     const bt = getBehaviorTypes();
     const hasV = bt.some(x => x.type === "vi_pham");
